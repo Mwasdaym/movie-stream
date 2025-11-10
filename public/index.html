@@ -3,59 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamFlix - Watch Movies & TV Shows</title>
+    <title>StreamFlix - Watch Movies in HD</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    <link rel="stylesheet" href="/style.css">
-    <link rel="icon" href="/assets/favicon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #e50914;
+            --secondary: #000000;
+            --background: #141414;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            padding: 1.5rem 4%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .search-box {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            overflow: hidden;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            color: white;
+            width: 300px;
+            outline: none;
+        }
+
+        .search-box button {
+            background: transparent;
+            border: none;
+            padding: 0.8rem 1.2rem;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Hero Section */
+        .hero-banner {
+            height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 4%;
+            background: linear-gradient(45deg, #000, var(--primary));
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        /* Movies Grid */
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem 4%;
+        }
+
+        .movie-card {
+            background: #2f2f2f;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .movie-info {
+            padding: 1rem;
+        }
+
+        .movie-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Video Player */
+        .video-player-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+        }
+
+        .player-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            margin-bottom: 1rem;
+        }
+
+        #player {
+            width: 100%;
+            height: 70vh;
+            background: #000;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 3000;
+        }
+
+        .modal-content {
+            position: relative;
+            background: var(--background);
+            margin: 5% auto;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+            z-index: 3001;
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-play-circle"></i>
-                <span>StreamFlix</span>
-            </div>
-            <div class="nav-links">
-                <a href="/" class="nav-link active" data-category="trending">Home</a>
-                <a href="/movies" class="nav-link" data-category="action">Movies</a>
-                <a href="/tv-shows" class="nav-link" data-category="tv">TV Shows</a>
-                <a href="/my-list" class="nav-link" data-category="mylist">My List</a>
-            </div>
-            <div class="nav-search">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="Search movies...">
-                    <button id="searchBtn"><i class="fas fa-search"></i></button>
-                </div>
-                <div class="auth-buttons" id="authButtons">
-                    <button class="btn btn-outline" id="loginBtn">Login</button>
-                    <button class="btn btn-primary" id="registerBtn">Sign Up</button>
-                </div>
-                <div class="user-menu" id="userMenu" style="display: none;">
-                    <img src="/assets/user-avatar.jpg" alt="User" id="userAvatar">
-                    <div class="user-dropdown">
-                        <a href="/profile">Profile</a>
-                        <a href="/my-list">My List</a>
-                        <a href="/settings">Settings</a>
-                        <button id="logoutBtn">Logout</button>
-                    </div>
-                </div>
-            </div>
+        <div class="nav-logo">
+            <i class="fas fa-play-circle"></i> StreamFlix
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search movies...">
+            <button id="searchBtn"><i class="fas fa-search"></i></button>
         </div>
     </nav>
 
-    <!-- Video Player Section -->
-    <section class="video-player-section" id="videoPlayerSection" style="display: none;">
+    <!-- Video Player -->
+    <section class="video-player-section" id="videoPlayerSection">
         <div class="player-container">
             <div class="player-header">
-                <button class="back-btn" id="backToBrowse">
-                    <i class="fas fa-arrow-left"></i> Back to Browse
+                <button class="btn btn-secondary" id="backToBrowse">
+                    <i class="fas fa-arrow-left"></i> Back
                 </button>
                 <h2 id="nowPlayingTitle">Now Playing</h2>
             </div>
-            <video id="player" playsinline controls>
-                <!-- Video source will be set dynamically -->
+            <video id="player" playsinline controls crossorigin="anonymous">
+                Your browser doesn't support HTML5 video.
             </video>
             <div class="player-controls">
                 <div class="quality-selector">
@@ -76,128 +272,291 @@
     </section>
 
     <!-- Main Content -->
-    <main class="main-content" id="mainContent">
-        <!-- Hero Banner -->
+    <main>
+        <!-- Hero -->
         <section class="hero-banner">
             <div class="hero-content">
-                <h1 class="hero-title" id="featuredTitle">Unlimited Movies, TV Shows, and More</h1>
-                <p class="hero-description" id="featuredDescription">Watch anywhere. Cancel anytime. Ready to watch? Enter your email to create or restart your membership.</p>
-                <div class="hero-actions">
-                    <button class="btn btn-primary btn-large" id="getStartedBtn">
-                        <i class="fas fa-play"></i> Get Started
+                <h1>Unlimited Movies, TV Shows, and More</h1>
+                <p>Watch anywhere. Stream anytime. Join StreamFlix today.</p>
+                <div>
+                    <button class="btn btn-primary" onclick="searchMovies('avengers')">
+                        <i class="fas fa-play"></i> Watch Now
+                    </button>
+                    <button class="btn btn-secondary" onclick="searchMovies('action')">
+                        <i class="fas fa-info"></i> Learn More
                     </button>
                 </div>
             </div>
-            <div class="hero-background"></div>
         </section>
 
-        <!-- Content Sections -->
-        <section class="content-section">
-            <h2 class="section-title">Trending Now 🔥</h2>
-            <div class="movies-grid" id="trendingGrid">
-                <div class="loading">Loading trending movies...</div>
+        <!-- Movies Grid -->
+        <section id="moviesSection">
+            <div class="movies-grid" id="moviesGrid">
+                <div class="loading">Search for movies to get started...</div>
             </div>
-        </section>
-
-        <section class="content-section">
-            <h2 class="section-title">Popular Movies 🎬</h2>
-            <div class="movies-grid" id="popularGrid">
-                <div class="loading">Loading popular movies...</div>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <h2 class="section-title">Top Rated ⭐</h2>
-            <div class="movies-grid" id="topRatedGrid">
-                <div class="loading">Loading top rated movies...</div>
-            </div>
-        </section>
-
-        <!-- Search Results -->
-        <section class="content-section" id="searchResults" style="display: none;">
-            <div class="search-header">
-                <h2 class="section-title">Search Results</h2>
-                <button class="btn btn-outline" id="clearSearch">Clear Search</button>
-            </div>
-            <div class="movies-grid" id="searchGrid"></div>
         </section>
     </main>
 
-    <!-- Auth Modals -->
-    <div class="modal" id="loginModal">
-        <div class="modal-content">
-            <span class="close-btn" id="closeLoginModal">&times;</span>
-            <div class="modal-body">
-                <h2>Login to StreamFlix</h2>
-                <form id="loginForm">
-                    <input type="email" placeholder="Email" required>
-                    <input type="password" placeholder="Password" required>
-                    <button type="submit" class="btn btn-primary">Login</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal" id="registerModal">
-        <div class="modal-content">
-            <span class="close-btn" id="closeRegisterModal">&times;</span>
-            <div class="modal-body">
-                <h2>Join StreamFlix</h2>
-                <form id="registerForm">
-                    <input type="text" placeholder="Username" required>
-                    <input type="email" placeholder="Email" required>
-                    <input type="password" placeholder="Password" required>
-                    <button type="submit" class="btn btn-primary">Sign Up</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Movie Details Modal -->
-    <div class="modal" id="movieModal">
-        <div class="modal-content large-modal">
-            <span class="close-btn" id="closeModal">&times;</span>
-            <div class="modal-body" id="modalBody">
-                <!-- Movie details will load here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>StreamFlix</h3>
-                <p>Your ultimate streaming destination for movies and TV shows.</p>
-            </div>
-            <div class="footer-section">
-                <h4>Browse</h4>
-                <a href="/">Home</a>
-                <a href="/movies">Movies</a>
-                <a href="/tv-shows">TV Shows</a>
-                <a href="/new-releases">New Releases</a>
-            </div>
-            <div class="footer-section">
-                <h4>Account</h4>
-                <a href="/login">Login</a>
-                <a href="/register">Sign Up</a>
-                <a href="/profile">Profile</a>
-                <a href="/my-list">My List</a>
-            </div>
-            <div class="footer-section">
-                <h4>Support</h4>
-                <a href="/help">Help Center</a>
-                <a href="/contact">Contact Us</a>
-                <a href="/faq">FAQ</a>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2024 StreamFlix. Educational Purpose Only.</p>
-        </div>
-    </footer>
-
     <!-- Scripts -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-    <script src="/script.js"></script>
+    <script>
+        const API_BASE = window.location.origin;
+        let plyrPlayer = null;
+
+        // DOM Elements
+        const elements = {
+            videoPlayerSection: document.getElementById('videoPlayerSection'),
+            player: document.getElementById('player'),
+            backToBrowse: document.getElementById('backToBrowse'),
+            nowPlayingTitle: document.getElementById('nowPlayingTitle'),
+            qualitySelect: document.getElementById('qualitySelect'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            searchInput: document.getElementById('searchInput'),
+            searchBtn: document.getElementById('searchBtn'),
+            moviesGrid: document.getElementById('moviesGrid')
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            searchMovies('avengers'); // Load default movies
+        });
+
+        function setupEventListeners() {
+            // Search
+            elements.searchBtn.addEventListener('click', () => {
+                const query = elements.searchInput.value.trim();
+                if (query) searchMovies(query);
+            });
+
+            elements.searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const query = elements.searchInput.value.trim();
+                    if (query) searchMovies(query);
+                }
+            });
+
+            // Video player
+            elements.backToBrowse.addEventListener('click', hideVideoPlayer);
+            elements.qualitySelect.addEventListener('change', handleQualityChange);
+            elements.downloadBtn.addEventListener('click', handleDownload);
+        }
+
+        // Search movies
+        async function searchMovies(query) {
+            try {
+                elements.moviesGrid.innerHTML = '<div class="loading">Searching movies...</div>';
+                
+                const response = await fetch(`${API_BASE}/api/search/${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.success && data.results.items.length > 0) {
+                    displayMovies(data.results.items);
+                } else {
+                    elements.moviesGrid.innerHTML = '<div class="loading">No movies found</div>';
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                elements.moviesGrid.innerHTML = '<div class="loading">Error searching movies</div>';
+            }
+        }
+
+        // Display movies
+        function displayMovies(movies) {
+            elements.moviesGrid.innerHTML = movies.map(movie => `
+                <div class="movie-card" onclick="showMovieDetails('${movie.subjectId}')">
+                    <img src="${movie.cover.url}" alt="${movie.title}" class="movie-poster" 
+                         onerror="this.src='https://via.placeholder.com/200x300/333/fff?text=No+Image'">
+                    <div class="movie-info">
+                        <div class="movie-title">${movie.title}</div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                            ${movie.releaseDate ? movie.releaseDate.split('-')[0] : 'N/A'} • 
+                            ⭐ ${movie.imdbRatingValue || 'N/A'}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show movie details and play options
+        async function showMovieDetails(movieId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/movie/${movieId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const movie = data.results.subject;
+                    showPlayOptions(movieId, movie.title);
+                }
+            } catch (error) {
+                console.error('Movie details error:', error);
+            }
+        }
+
+        // Show play options
+        function showPlayOptions(movieId, movieTitle) {
+            const play = confirm(`Play "${movieTitle}"?`);
+            if (play) {
+                playMovie(movieId, movieTitle);
+            }
+        }
+
+        // PLAY MOVIE - PROPER STREAMING
+        async function playMovie(movieId, movieTitle) {
+            try {
+                showVideoPlayer();
+                elements.nowPlayingTitle.textContent = `Now Playing: ${movieTitle}`;
+                
+                // Get available qualities
+                const qualitiesResponse = await fetch(`${API_BASE}/api/stream/${movieId}/qualities`);
+                const qualitiesData = await qualitiesResponse.json();
+                
+                if (qualitiesData.success && qualitiesData.data.qualities.length > 0) {
+                    const qualities = qualitiesData.data.qualities;
+                    
+                    // Populate quality selector
+                    elements.qualitySelect.innerHTML = qualities.map(quality => 
+                        `<option value="${quality.quality}">${quality.quality}</option>`
+                    ).join('');
+                    
+                    // Play the best quality
+                    const bestQuality = qualities[0];
+                    await setupVideoPlayer(movieId, bestQuality.quality, movieTitle);
+                } else {
+                    alert('No streaming sources available');
+                    hideVideoPlayer();
+                }
+            } catch (error) {
+                console.error('Play movie error:', error);
+                alert('Error playing movie');
+                hideVideoPlayer();
+            }
+        }
+
+        // Setup video player with streaming
+        async function setupVideoPlayer(movieId, quality, movieTitle) {
+            const streamUrl = `${API_BASE}/api/stream/${movieId}?quality=${quality}`;
+            
+            console.log('🎬 Streaming from:', streamUrl);
+            
+            // Clear previous source
+            elements.player.innerHTML = '';
+            
+            // Create new source
+            const source = document.createElement('source');
+            source.src = streamUrl;
+            source.type = 'video/mp4';
+            
+            elements.player.appendChild(source);
+            
+            // Initialize Plyr player
+            if (plyrPlayer) {
+                plyrPlayer.destroy();
+            }
+            
+            plyrPlayer = new Plyr('#player', {
+                controls: [
+                    'play', 
+                    'progress', 
+                    'current-time', 
+                    'duration',
+                    'mute', 
+                    'volume',
+                    'fullscreen'
+                ],
+                ratio: '16:9'
+            });
+            
+            // Load the video
+            await elements.player.load();
+            
+            // Try to play automatically
+            try {
+                await plyrPlayer.play();
+            } catch (playError) {
+                console.log('Auto-play prevented');
+            }
+            
+            // Set download handler
+            elements.downloadBtn.onclick = () => {
+                downloadMovie(movieId, quality, movieTitle);
+            };
+        }
+
+        // Handle quality change
+        async function handleQualityChange() {
+            const movieId = elements.nowPlayingTitle.textContent.replace('Now Playing: ', '');
+            const quality = elements.qualitySelect.value;
+            const movieTitle = elements.nowPlayingTitle.textContent.replace('Now Playing: ', '');
+            
+            if (movieId && quality) {
+                await setupVideoPlayer(movieId, quality, movieTitle);
+            }
+        }
+
+        // Download movie
+        async function downloadMovie(movieId, quality, movieTitle) {
+            try {
+                const downloadUrl = `${API_BASE}/api/download/${movieId}?quality=${quality}`;
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = `${movieTitle}-${quality}.mp4`;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Download failed');
+            }
+        }
+
+        function handleDownload() {
+            const movieTitle = elements.nowPlayingTitle.textContent.replace('Now Playing: ', '');
+            const quality = elements.qualitySelect.value;
+            const movieId = getCurrentMovieId(); // You'd need to track this
+            
+            if (movieId) {
+                downloadMovie(movieId, quality, movieTitle);
+            }
+        }
+
+        function getCurrentMovieId() {
+            // This would track the currently playing movie
+            return localStorage.getItem('currentMovieId');
+        }
+
+        function showVideoPlayer() {
+            elements.videoPlayerSection.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideVideoPlayer() {
+            elements.videoPlayerSection.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            if (plyrPlayer) {
+                plyrPlayer.stop();
+            }
+        }
+
+        // Utility function to handle download
+        function handleDownload() {
+            const movieTitle = elements.nowPlayingTitle.textContent.replace('Now Playing: ', '');
+            const quality = elements.qualitySelect.value;
+            const movieId = getCurrentMovieId();
+            
+            if (movieId) {
+                downloadMovie(movieId, quality, movieTitle);
+            }
+        }
+
+        function getCurrentMovieId() {
+            // Simple tracking - you might want to improve this
+            return sessionStorage.getItem('currentMovieId');
+        }
+    </script>
 </body>
 </html>
