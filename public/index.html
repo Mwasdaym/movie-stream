@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StreamFlix - Watch Movies</title>
     <style>
+        /* YOUR EXISTING CSS STYLES - KEEP THESE THE SAME */
         * {
             margin: 0;
             padding: 0;
@@ -18,399 +19,13 @@
             line-height: 1.6;
         }
 
-        /* Header */
-        .header {
-            background: #000;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 2px solid #e50914;
-        }
+        /* ... ALL YOUR EXISTING CSS CODE ... */
 
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .logo {
-            color: #e50914;
-            font-size: 1.8rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .logo:hover {
-            transform: scale(1.05);
-        }
-
-        .home-btn {
-            background: #e50914;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .home-btn:hover {
-            background: #f40612;
-        }
-
-        .search-box {
-            display: flex;
-        }
-
-        .search-box input {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px 0 0 4px;
-            width: 300px;
-            background: #333;
-            color: white;
-        }
-
-        .search-box input::placeholder {
-            color: #ccc;
-        }
-
-        .search-box button {
-            padding: 0.5rem 1rem;
-            background: #e50914;
-            color: white;
-            border: none;
-            border-radius: 0 4px 4px 0;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .search-box button:hover {
-            background: #f40612;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-top: 80px;
-            padding: 2rem;
-        }
-
-        .hero {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: linear-gradient(135deg, #000 0%, #e50914 100%);
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(45deg, #fff, #e50914);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .hero p {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .btn {
-            padding: 1rem 2rem;
-            background: #e50914;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            margin: 0 0.5rem;
-            transition: all 0.3s;
-            font-weight: bold;
-        }
-
-        .btn:hover {
-            background: #f40612;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #e50914;
-            color: #e50914;
-        }
-
-        .btn-outline:hover {
-            background: #e50914;
-            color: white;
-        }
-
-        /* Movies Grid */
-        .movies-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .movie-card {
-            background: #2f2f2f;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.3s;
-            cursor: pointer;
-            border: 1px solid #404040;
-        }
-
-        .movie-card:hover {
-            transform: translateY(-8px) scale(1.03);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
-            border-color: #e50914;
-        }
-
-        .movie-poster {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-            transition: transform 0.3s;
-        }
-
-        .movie-card:hover .movie-poster {
-            transform: scale(1.1);
-        }
-
-        .movie-info {
-            padding: 1rem;
-        }
-
-        .movie-title {
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            font-size: 1rem;
-            line-height: 1.3;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .movie-meta {
-            font-size: 0.85rem;
-            opacity: 0.7;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* Section Title */
-        .section-title {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .section-title::after {
-            content: '';
-            flex: 1;
-            height: 3px;
-            background: linear-gradient(90deg, #e50914, transparent);
-            border-radius: 2px;
-        }
-
-        /* Video Player */
-        .video-player {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 2000;
-            display: none;
-            flex-direction: column;
-        }
-
-        .player-header {
-            padding: 1rem 2rem;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-        }
-
-        .player-content {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-        }
-
-        #videoElement {
-            width: 90%;
-            max-width: 1200px;
-            height: auto;
-            max-height: 80vh;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .player-controls {
-            padding: 1rem 2rem;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid #333;
-        }
-
-        .quality-selector {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .quality-selector select {
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-        }
-
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 3rem 2rem;
-            font-size: 1.2rem;
-            grid-column: 1 / -1;
-        }
-
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
-        }
-
-        @keyframes dots {
-            0%, 20% { color: rgba(255,255,255,0); text-shadow: .25em 0 0 rgba(255,255,255,0), .5em 0 0 rgba(255,255,255,0); }
-            40% { color: white; text-shadow: .25em 0 0 rgba(255,255,255,0), .5em 0 0 rgba(255,255,255,0); }
-            60% { text-shadow: .25em 0 0 white, .5em 0 0 rgba(255,255,255,0); }
-            80%, 100% { text-shadow: .25em 0 0 white, .5em 0 0 white; }
-        }
-
-        .error {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: #e50914;
-            font-size: 1.2rem;
-            grid-column: 1 / -1;
-        }
-
-        /* Quick Actions */
-        .quick-actions {
-            display: flex;
-            gap: 1rem;
-            margin: 1rem 0;
-            flex-wrap: wrap;
-        }
-
-        .quick-btn {
-            background: #333;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9rem;
-        }
-
-        .quick-btn:hover {
-            background: #e50914;
-            transform: translateY(-2px);
-        }
-
-        /* Stats */
-        .stats {
-            display: flex;
-            gap: 2rem;
-            margin: 1rem 0;
-            color: #ccc;
-            font-size: 0.9rem;
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header {
-                padding: 1rem;
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .nav-left {
-                width: 100%;
-                justify-content: space-between;
-            }
-            
-            .search-box input {
-                width: 200px;
-            }
-            
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-            
-            .movies-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-                gap: 1rem;
-            }
-        }
+        /* Keep all your CSS styles exactly as they are */
     </style>
 </head>
 <body>
-    <!-- Header -->
+    <!-- YOUR EXISTING HTML STRUCTURE - KEEP THIS THE SAME -->
     <header class="header">
         <div class="nav-left">
             <div class="logo" onclick="goHome()">
@@ -428,7 +43,6 @@
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="main-content">
         <section class="hero">
             <div class="hero-content">
@@ -445,7 +59,6 @@
             </div>
         </section>
 
-        <!-- Quick Actions -->
         <div class="quick-actions">
             <button class="quick-btn" onclick="searchMovies('avengers')">Avengers</button>
             <button class="quick-btn" onclick="searchMovies('spider man')">Spider Man</button>
@@ -455,7 +68,6 @@
             <button class="quick-btn" onclick="searchMovies('mission impossible')">Mission Impossible</button>
         </div>
 
-        <!-- Stats -->
         <div class="stats">
             <div class="stat-item">
                 <i class="fas fa-bolt"></i>
@@ -471,7 +83,6 @@
             </div>
         </div>
 
-        <!-- Movies Section -->
         <section id="moviesSection">
             <h2 class="section-title" id="sectionTitle">
                 <i class="fas fa-fire"></i> Trending Movies
@@ -482,7 +93,6 @@
         </section>
     </main>
 
-    <!-- Video Player -->
     <div class="video-player" id="videoPlayer">
         <div class="player-header">
             <h3 id="nowPlaying">Now Playing</h3>
@@ -514,6 +124,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
     <script>
+        // ==== REPLACE EVERYTHING FROM HERE ====
         const API_BASE = window.location.origin;
 
         // DOM Elements
@@ -537,6 +148,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             loadTrendingMovies();
+            testVideoSupport();
         });
 
         function setupEventListeners() {
@@ -569,15 +181,23 @@
             elements.downloadBtn.addEventListener('click', handleDownload);
         }
 
+        // Test video support
+        async function testVideoSupport() {
+            try {
+                const response = await fetch(`${API_BASE}/api/test-video`);
+                const data = await response.json();
+                console.log('🎬 Video support test:', data);
+            } catch (error) {
+                console.error('Video test failed:', error);
+            }
+        }
+
         // HOME BUTTON FUNCTION
         function goHome() {
             elements.searchInput.value = '';
             currentSection = 'trending';
             loadTrendingMovies();
-            
-            // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            
             console.log('🏠 Home button clicked - Loading trending movies');
         }
 
@@ -594,16 +214,14 @@
                     displayMovies(data.results.items);
                     currentSection = 'trending';
                 } else {
-                    // Fallback to default search
                     searchMovies('avengers');
                 }
             } catch (error) {
                 console.error('Trending error:', error);
-                searchMovies('avengers'); // Fallback
+                searchMovies('avengers');
             }
         }
 
-        // Update section title with icon
         function updateSectionTitle(title, icon = 'film') {
             const icons = {
                 'fire': 'fas fa-fire',
@@ -720,7 +338,7 @@
             `;
         }
 
-        // Play movie function
+        // FIXED PLAY MOVIE FUNCTION
         async function playMovie(movieId, movieTitle) {
             try {
                 currentMovieId = movieId;
@@ -732,15 +350,105 @@
                 // Load qualities
                 await loadQualities(movieId);
                 
-                // Play with default quality
-                const quality = elements.qualitySelect.value;
-                await playWithQuality(quality);
+                // Try different streaming methods
+                await tryStreamingMethods(movieId);
                 
             } catch (error) {
                 console.error('Play error:', error);
-                alert('Error playing movie: ' + error.message);
-                hideVideoPlayer();
+                showStreamingError(error);
             }
+        }
+
+        // Try different streaming methods
+        async function tryStreamingMethods(movieId) {
+            const quality = elements.qualitySelect.value;
+            
+            // Method 1: Direct streaming
+            console.log('🔄 Trying Method 1: Direct streaming');
+            const streamUrl = `${API_BASE}/api/stream/${movieId}?quality=${quality}`;
+            
+            try {
+                await playVideoWithUrl(streamUrl, 'Method 1 (Stream)');
+                return; // Success, stop trying other methods
+            } catch (error1) {
+                console.log('❌ Method 1 failed:', error1.message);
+            }
+            
+            // Method 2: Direct video (redirect)
+            console.log('🔄 Trying Method 2: Direct video');
+            const directUrl = `${API_BASE}/api/video/${movieId}?quality=${quality}`;
+            
+            try {
+                await playVideoWithUrl(directUrl, 'Method 2 (Direct)');
+                return; // Success
+            } catch (error2) {
+                console.log('❌ Method 2 failed:', error2.message);
+            }
+            
+            // Method 3: External URL directly
+            console.log('🔄 Trying Method 3: External URL');
+            try {
+                const qualitiesResponse = await fetch(`${API_BASE}/api/qualities/${movieId}`);
+                const qualitiesData = await qualitiesResponse.json();
+                
+                if (qualitiesData.success && qualitiesData.qualities.length > 0) {
+                    const selectedQuality = qualitiesData.qualities.find(q => q.quality === quality) || qualitiesData.qualities[0];
+                    await playVideoWithUrl(selectedQuality.download_url, 'Method 3 (External)');
+                    return; // Success
+                }
+            } catch (error3) {
+                console.log('❌ Method 3 failed:', error3.message);
+            }
+            
+            // All methods failed
+            throw new Error('All streaming methods failed. The video format may not be supported by your browser.');
+        }
+
+        // Play video with specific URL
+        async function playVideoWithUrl(videoUrl, method) {
+            return new Promise((resolve, reject) => {
+                console.log(`🎬 ${method}: ${videoUrl}`);
+                
+                // Clear previous source
+                elements.videoElement.innerHTML = '';
+                
+                // Create source element
+                const source = document.createElement('source');
+                source.src = videoUrl;
+                source.type = 'video/mp4';
+                
+                elements.videoElement.appendChild(source);
+                
+                // Event listeners
+                const errorHandler = () => {
+                    console.log(`❌ ${method} video error`);
+                    reject(new Error(`Video playback failed: ${method}`));
+                };
+                
+                const loadHandler = () => {
+                    console.log(`✅ ${method} video loaded`);
+                    resolve();
+                };
+                
+                elements.videoElement.addEventListener('error', errorHandler, { once: true });
+                elements.videoElement.addEventListener('loadeddata', loadHandler, { once: true });
+                
+                // Load the video
+                elements.videoElement.load();
+                
+                // Try to play
+                elements.videoElement.play().catch(playError => {
+                    console.log(`⏸️ ${method} auto-play prevented`);
+                    // Auto-play prevention is not a failure
+                });
+                
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    if (elements.videoElement.readyState < 2) { // Not loaded enough
+                        reject(new Error('Video loading timeout'));
+                    }
+                }, 10000);
+            });
         }
 
         // Load available qualities
@@ -754,7 +462,6 @@
                         `<option value="${q.quality}">${q.quality} (${formatFileSize(q.size)})</option>`
                     ).join('');
                 } else {
-                    // Default qualities as fallback
                     elements.qualitySelect.innerHTML = `
                         <option value="720p">720p HD</option>
                         <option value="480p">480p</option>
@@ -771,48 +478,46 @@
             }
         }
 
-        // Play with specific quality
-        async function playWithQuality(quality) {
-            try {
-                const streamUrl = `${API_BASE}/api/stream/${currentMovieId}?quality=${quality}`;
-                
-                console.log('🎬 Streaming from:', streamUrl);
-                
-                // Set video source
-                elements.videoElement.src = streamUrl;
-                
-                // Load and play
-                await elements.videoElement.load();
-                
-                // Show loading state
-                elements.videoElement.addEventListener('waiting', () => {
-                    console.log('⏳ Video buffering...');
-                });
-                
-                elements.videoElement.addEventListener('canplay', () => {
-                    console.log('✅ Video ready to play');
-                });
-                
-                // Try to play automatically
-                try {
-                    await elements.videoElement.play();
-                    console.log('▶️ Video playing');
-                } catch (playError) {
-                    console.log('⏸️ Auto-play prevented, user must click play');
-                }
-                
-            } catch (error) {
-                console.error('Play quality error:', error);
-                alert('Error playing this quality: ' + error.message);
-            }
-        }
-
         // Handle quality change
         async function handleQualityChange() {
             if (currentMovieId) {
                 const quality = elements.qualitySelect.value;
-                await playWithQuality(quality);
+                await tryStreamingMethods(currentMovieId);
             }
+        }
+
+        // Show streaming error
+        function showStreamingError(error) {
+            hideVideoPlayer();
+            
+            const errorMessage = `
+                <div style="text-align: center; padding: 2rem; background: #2f2f2f; border-radius: 10px; margin: 1rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎬</div>
+                    <h3 style="color: #e50914;">Video Playback Failed</h3>
+                    <p>${error.message}</p>
+                    <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 1rem;">
+                        This could be due to:
+                        <br>• Video format not supported by your browser
+                        <br>• Network restrictions
+                        <br>• Server issues
+                    </p>
+                    <button class="btn" onclick="hideVideoPlayer()" style="margin-top: 1rem;">
+                        <i class="fas fa-times"></i> Close
+                    </button>
+                    <button class="btn btn-outline" onclick="handleDownload()" style="margin-top: 1rem; margin-left: 0.5rem;">
+                        <i class="fas fa-download"></i> Download Instead
+                    </button>
+                </div>
+            `;
+            
+            // Show error in movies grid temporarily
+            const previousContent = elements.moviesGrid.innerHTML;
+            elements.moviesGrid.innerHTML = errorMessage;
+            
+            // Restore after 5 seconds
+            setTimeout(() => {
+                elements.moviesGrid.innerHTML = previousContent;
+            }, 5000);
         }
 
         // Handle download
@@ -823,7 +528,6 @@
                 
                 console.log('📥 Downloading from:', downloadUrl);
                 
-                // Create download link
                 const link = document.createElement('a');
                 link.href = downloadUrl;
                 link.download = `${currentMovieTitle}-${quality}.mp4`;
@@ -846,6 +550,7 @@
             document.body.style.overflow = 'auto';
             elements.videoElement.pause();
             elements.videoElement.src = '';
+            elements.videoElement.innerHTML = '';
         }
 
         // Format file size
@@ -854,6 +559,7 @@
             const mb = Math.round(bytes / 1024 / 1024);
             return `${mb} MB`;
         }
+        // ==== TO HERE ====
     </script>
 </body>
 </html>
