@@ -6,7 +6,8 @@
     <title>StreamFlix - Watch Movies & TV Shows</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="icon" href="/assets/favicon.ico">
 </head>
 <body>
     <!-- Navigation -->
@@ -17,19 +18,28 @@
                 <span>StreamFlix</span>
             </div>
             <div class="nav-links">
-                <a href="#" class="nav-link active" data-category="trending">Home</a>
-                <a href="#" class="nav-link" data-category="action">Action</a>
-                <a href="#" class="nav-link" data-category="comedy">Comedy</a>
-                <a href="#" class="nav-link" data-category="drama">Drama</a>
-                <a href="#" class="nav-link" data-category="sci-fi">Sci-Fi</a>
+                <a href="/" class="nav-link active" data-category="trending">Home</a>
+                <a href="/movies" class="nav-link" data-category="action">Movies</a>
+                <a href="/tv-shows" class="nav-link" data-category="tv">TV Shows</a>
+                <a href="/my-list" class="nav-link" data-category="mylist">My List</a>
             </div>
             <div class="nav-search">
                 <div class="search-box">
                     <input type="text" id="searchInput" placeholder="Search movies...">
                     <button id="searchBtn"><i class="fas fa-search"></i></button>
                 </div>
-                <div class="user-menu">
-                    <img src="https://ui-avatars.com/api/?name=User&background=e50914&color=fff" alt="User">
+                <div class="auth-buttons" id="authButtons">
+                    <button class="btn btn-outline" id="loginBtn">Login</button>
+                    <button class="btn btn-primary" id="registerBtn">Sign Up</button>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <img src="/assets/user-avatar.jpg" alt="User" id="userAvatar">
+                    <div class="user-dropdown">
+                        <a href="/profile">Profile</a>
+                        <a href="/my-list">My List</a>
+                        <a href="/settings">Settings</a>
+                        <button id="logoutBtn">Logout</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -65,29 +75,20 @@
         </div>
     </section>
 
-    <!-- Main Browse Content -->
+    <!-- Main Content -->
     <main class="main-content" id="mainContent">
         <!-- Hero Banner -->
         <section class="hero-banner">
             <div class="hero-content">
-                <h1 class="hero-title" id="featuredTitle">Featured Movie</h1>
-                <p class="hero-description" id="featuredDescription">Loading featured content...</p>
-                <div class="hero-meta" id="featuredMeta">
-                    <span class="rating"><i class="fas fa-star"></i> --</span>
-                    <span class="year">----</span>
-                    <span class="duration">--h --m</span>
-                    <span class="quality">HD</span>
-                </div>
+                <h1 class="hero-title" id="featuredTitle">Unlimited Movies, TV Shows, and More</h1>
+                <p class="hero-description" id="featuredDescription">Watch anywhere. Cancel anytime. Ready to watch? Enter your email to create or restart your membership.</p>
                 <div class="hero-actions">
-                    <button class="btn btn-primary" id="playFeaturedBtn">
-                        <i class="fas fa-play"></i> Play Now
-                    </button>
-                    <button class="btn btn-secondary" id="featuredInfoBtn">
-                        <i class="fas fa-info-circle"></i> More Info
+                    <button class="btn btn-primary btn-large" id="getStartedBtn">
+                        <i class="fas fa-play"></i> Get Started
                     </button>
                 </div>
             </div>
-            <div class="hero-background" id="heroBackground"></div>
+            <div class="hero-background"></div>
         </section>
 
         <!-- Content Sections -->
@@ -106,22 +107,55 @@
         </section>
 
         <section class="content-section">
-            <h2 class="section-title">Action Movies 💥</h2>
-            <div class="movies-grid" id="actionGrid">
-                <div class="loading">Loading action movies...</div>
+            <h2 class="section-title">Top Rated ⭐</h2>
+            <div class="movies-grid" id="topRatedGrid">
+                <div class="loading">Loading top rated movies...</div>
             </div>
         </section>
 
         <!-- Search Results -->
         <section class="content-section" id="searchResults" style="display: none;">
-            <h2 class="section-title">Search Results</h2>
+            <div class="search-header">
+                <h2 class="section-title">Search Results</h2>
+                <button class="btn btn-outline" id="clearSearch">Clear Search</button>
+            </div>
             <div class="movies-grid" id="searchGrid"></div>
         </section>
     </main>
 
+    <!-- Auth Modals -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeLoginModal">&times;</span>
+            <div class="modal-body">
+                <h2>Login to StreamFlix</h2>
+                <form id="loginForm">
+                    <input type="email" placeholder="Email" required>
+                    <input type="password" placeholder="Password" required>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeRegisterModal">&times;</span>
+            <div class="modal-body">
+                <h2>Join StreamFlix</h2>
+                <form id="registerForm">
+                    <input type="text" placeholder="Username" required>
+                    <input type="email" placeholder="Email" required>
+                    <input type="password" placeholder="Password" required>
+                    <button type="submit" class="btn btn-primary">Sign Up</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Movie Details Modal -->
     <div class="modal" id="movieModal">
-        <div class="modal-content">
+        <div class="modal-content large-modal">
             <span class="close-btn" id="closeModal">&times;</span>
             <div class="modal-body" id="modalBody">
                 <!-- Movie details will load here -->
@@ -134,20 +168,27 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h3>StreamFlix</h3>
-                <p>Your ultimate streaming destination</p>
+                <p>Your ultimate streaming destination for movies and TV shows.</p>
             </div>
             <div class="footer-section">
                 <h4>Browse</h4>
-                <a href="#" data-category="trending">Home</a>
-                <a href="#" data-category="action">Action</a>
-                <a href="#" data-category="comedy">Comedy</a>
-                <a href="#" data-category="drama">Drama</a>
+                <a href="/">Home</a>
+                <a href="/movies">Movies</a>
+                <a href="/tv-shows">TV Shows</a>
+                <a href="/new-releases">New Releases</a>
+            </div>
+            <div class="footer-section">
+                <h4>Account</h4>
+                <a href="/login">Login</a>
+                <a href="/register">Sign Up</a>
+                <a href="/profile">Profile</a>
+                <a href="/my-list">My List</a>
             </div>
             <div class="footer-section">
                 <h4>Support</h4>
-                <a href="#">Help Center</a>
-                <a href="#">Contact Us</a>
-                <a href="#">FAQ</a>
+                <a href="/help">Help Center</a>
+                <a href="/contact">Contact Us</a>
+                <a href="/faq">FAQ</a>
             </div>
         </div>
         <div class="footer-bottom">
@@ -157,6 +198,6 @@
 
     <!-- Scripts -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html>
