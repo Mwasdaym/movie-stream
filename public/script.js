@@ -1,5 +1,6 @@
-// API Configuration - USING YOUR API BRO!
-const API_BASE = 'https://movieapi.giftedtech.co.ke/api';
+// API Configuration - Now using relative paths for our backend
+const API_BASE = window.location.origin + '/api';
+const EXTERNAL_API = 'https://movieapi.giftedtech.co.ke/api';
 
 // DOM Elements
 const elements = {
@@ -8,92 +9,215 @@ const elements = {
     searchBtn: document.getElementById('searchBtn'),
     navbar: document.querySelector('.navbar'),
     
-    // Sections
-    videoPlayerSection: document.getElementById('videoPlayerSection'),
-    mainContent: document.getElementById('mainContent'),
+    // Auth elements
+    authButtons: document.getElementById('authButtons'),
+    userMenu: document.getElementById('userMenu'),
+    loginBtn: document.getElementById('loginBtn'),
+    registerBtn: document.getElementById('registerBtn'),
+    logoutBtn: document.getElementById('logoutBtn'),
+    userAvatar: document.getElementById('userAvatar'),
+    
+    // Auth modals
+    loginModal: document.getElementById('loginModal'),
+    registerModal: document.getElementById('registerModal'),
+    closeLoginModal: document.getElementById('closeLoginModal'),
+    closeRegisterModal: document.getElementById('closeRegisterModal'),
+    loginForm: document.getElementById('loginForm'),
+    registerForm: document.getElementById('registerForm'),
     
     // Video Player
+    videoPlayerSection: document.getElementById('videoPlayerSection'),
     player: document.getElementById('player'),
     backToBrowse: document.getElementById('backToBrowse'),
     nowPlayingTitle: document.getElementById('nowPlayingTitle'),
     qualitySelect: document.getElementById('qualitySelect'),
     downloadBtn: document.getElementById('downloadBtn'),
     
-    // Hero Section
+    // Main Content
+    mainContent: document.getElementById('mainContent'),
     featuredTitle: document.getElementById('featuredTitle'),
     featuredDescription: document.getElementById('featuredDescription'),
-    featuredMeta: document.getElementById('featuredMeta'),
+    getStartedBtn: document.getElementById('getStartedBtn'),
     heroBackground: document.getElementById('heroBackground'),
-    playFeaturedBtn: document.getElementById('playFeaturedBtn'),
-    featuredInfoBtn: document.getElementById('featuredInfoBtn'),
     
     // Content Grids
     trendingGrid: document.getElementById('trendingGrid'),
     popularGrid: document.getElementById('popularGrid'),
-    actionGrid: document.getElementById('actionGrid'),
+    topRatedGrid: document.getElementById('topRatedGrid'),
     searchGrid: document.getElementById('searchGrid'),
     searchResults: document.getElementById('searchResults'),
+    clearSearch: document.getElementById('clearSearch'),
     
-    // Modal
+    // Movie Modal
     movieModal: document.getElementById('movieModal'),
     closeModal: document.getElementById('closeModal'),
     modalBody: document.getElementById('modalBody')
 };
 
 // Global Variables
+let currentUser = null;
 let currentMovies = [];
 let featuredMovie = null;
 let plyrPlayer = null;
 
 // Initialize App
 async function init() {
-    await loadFeaturedMovie();
+    await checkAuthStatus();
+    await loadFeaturedContent();
     await loadAllSections();
     setupEventListeners();
     initializeVideoPlayer();
 }
 
-// Load Featured Movie for Hero Section
-async function loadFeaturedMovie() {
+// Authentication Functions
+async function checkAuthStatus() {
     try {
-        // Get a popular movie for featured section
-        const response = await fetch(`${API_BASE}/search/avengers`);
-        const data = await response.json();
-        
-        if (data.success && data.results.items.length > 0) {
-            featuredMovie = data.results.items[0];
-            updateHeroSection(featuredMovie);
+        const token = localStorage.getItem('streamflix_token');
+        if (token) {
+            const response = await fetch(`${API_BASE}/auth/me`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                currentUser = data.data.user;
+                updateUIForLoggedInUser();
+            } else {
+                localStorage.removeItem('streamflix_token');
+            }
         }
     } catch (error) {
-        console.error('Error loading featured movie:', error);
+        console.error('Auth check error:', error);
+        localStorage.removeItem('streamflix_token');
     }
 }
 
-// Update Hero Section with Movie Data
-function updateHeroSection(movie) {
-    elements.featuredTitle.textContent = movie.title;
-    elements.featuredDescription.textContent = movie.description || 'An amazing movie experience awaits...';
-    
-    // Update hero background
-    if (movie.cover && movie.cover.url) {
-        elements.heroBackground.style.background = 
-            `linear-gradient(45deg, #000, #e50914), url('${movie.cover.url}') center/cover`;
+function updateUIForLoggedInUser() {
+    elements.authButtons.style.display = 'none';
+    elements.userMenu.style.display = 'flex';
+    if (currentUser.profile?.avatar) {
+        elements.userAvatar.src = currentUser.profile.avatar;
     }
-    
-    // Update metadata
-    elements.featuredMeta.innerHTML = `
-        <span class="rating"><i class="fas fa-star"></i> ${movie.imdbRatingValue || '7.0'}/10</span>
-        <span class="year">${movie.releaseDate ? movie.releaseDate.split('-')[0] : '2020'}</span>
-        <span class="duration">${formatDuration(movie.duration)}</span>
-        <span class="quality">HD</span>
-    `;
+}
+
+// Login function
+async function login(email, password) {
+    try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            localStorage.setItem('streamflix_token', data.data.token);
+            currentUser = data.data.user;
+            updateUIForLoggedInUser();
+            closeModalById('loginModal');
+            showNotification('Login successful!', 'success');
+            return true;
+        } else {
+            showNotification(data.message, 'error');
+            return false;
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showNotification('Login failed. Please try again.', 'error');
+        return false;
+    }
+}
+
+// Register function
+async function register(username, email, password) {
+    try {
+        const response = await fetch(`${API_BASE}/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            localStorage.setItem('streamflix_token', data.data.token);
+            currentUser = data.data.user;
+            updateUIForLoggedInUser();
+            closeModalById('registerModal');
+            showNotification('Registration successful!', 'success');
+            return true;
+        } else {
+            showNotification(data.message, 'error');
+            return false;
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        showNotification('Registration failed. Please try again.', 'error');
+        return false;
+    }
+}
+
+// Logout function
+function logout() {
+    localStorage.removeItem('streamflix_token');
+    currentUser = null;
+    elements.authButtons.style.display = 'flex';
+    elements.userMenu.style.display = 'none';
+    showNotification('Logged out successfully', 'success');
+}
+
+// Load Featured Content
+async function loadFeaturedContent() {
+    try {
+        // Try to get featured content from our backend first
+        const response = await fetch(`${API_BASE}/movies/trending`);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data.movies.length > 0) {
+                featuredMovie = data.data.movies[0];
+                updateHeroSection(featuredMovie);
+                return;
+            }
+        }
+        
+        // Fallback to external API
+        const externalResponse = await fetch(`${EXTERNAL_API}/search/avengers`);
+        const externalData = await externalResponse.json();
+        
+        if (externalData.success && externalData.results.items.length > 0) {
+            featuredMovie = externalData.results.items[0];
+            updateHeroSection(featuredMovie);
+        }
+    } catch (error) {
+        console.error('Error loading featured content:', error);
+    }
+}
+
+// Update Hero Section
+function updateHeroSection(movie) {
+    if (movie) {
+        elements.featuredTitle.textContent = movie.title;
+        elements.featuredDescription.textContent = movie.description || 'An amazing movie experience awaits...';
+        
+        if (movie.cover && movie.cover.url) {
+            elements.heroBackground.style.background = 
+                `linear-gradient(45deg, #000, #e50914), url('${movie.cover.url}') center/cover`;
+        }
+    }
 }
 
 // Load All Content Sections
 async function loadAllSections() {
     await loadSection('trending', 'avengers', elements.trendingGrid);
     await loadSection('popular', 'spider man', elements.popularGrid);
-    await loadSection('action', 'action', elements.actionGrid);
+    await loadSection('top rated', 'action', elements.topRatedGrid);
 }
 
 // Load Specific Section
@@ -101,11 +225,23 @@ async function loadSection(section, query, gridElement) {
     try {
         showLoading(gridElement);
         
-        const response = await fetch(`${API_BASE}/search/${encodeURIComponent(query)}`);
-        const data = await response.json();
+        // Try our backend first
+        const response = await fetch(`${API_BASE}/movies/search?q=${encodeURIComponent(query)}`);
         
-        if (data.success) {
-            displayMovies(data.results.items, gridElement, true); // true = show play buttons
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                displayMovies(data.data.movies, gridElement, true);
+                return;
+            }
+        }
+        
+        // Fallback to external API
+        const externalResponse = await fetch(`${EXTERNAL_API}/search/${encodeURIComponent(query)}`);
+        const externalData = await externalResponse.json();
+        
+        if (externalData.success) {
+            displayMovies(externalData.results.items, gridElement, true);
         } else {
             gridElement.innerHTML = '<div class="error">Failed to load content</div>';
         }
@@ -115,15 +251,15 @@ async function loadSection(section, query, gridElement) {
     }
 }
 
-// Display Movies in Grid
+// Display Movies in Grid (same as before)
 function displayMovies(movies, gridElement, showPlayButton = false) {
     gridElement.innerHTML = movies.map(movie => `
-        <div class="movie-card" data-id="${movie.subjectId}">
-            <img src="${movie.cover.url}" alt="${movie.title}" class="movie-poster" 
-                 onerror="this.src='https://via.placeholder.com/200x300/333/fff?text=No+Image'">
+        <div class="movie-card" data-id="${movie.subjectId || movie._id}">
+            <img src="${movie.cover?.url || movie.poster}" alt="${movie.title}" class="movie-poster" 
+                 onerror="this.src='/assets/placeholder-movie.jpg'">
             ${showPlayButton ? `
             <div class="play-overlay">
-                <button class="play-btn" onclick="playMovie('${movie.subjectId}', '${movie.title}')">
+                <button class="play-btn" onclick="playMovie('${movie.subjectId || movie._id}', '${movie.title}')">
                     <i class="fas fa-play"></i>
                 </button>
             </div>
@@ -132,48 +268,48 @@ function displayMovies(movies, gridElement, showPlayButton = false) {
                 <h3 class="movie-title">${movie.title}</h3>
                 <div class="movie-meta">
                     <span>${movie.releaseDate ? movie.releaseDate.split('-')[0] : 'N/A'}</span>
-                    <span>⭐ ${movie.imdbRatingValue || 'N/A'}</span>
+                    <span>⭐ ${movie.imdbRatingValue || movie.rating || 'N/A'}</span>
                 </div>
             </div>
         </div>
     `).join('');
     
     // Add click event for movie info
-    if (!showPlayButton) {
-        document.querySelectorAll('.movie-card').forEach(card => {
-            card.addEventListener('click', () => {
+    document.querySelectorAll('.movie-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (!e.target.closest('.play-btn')) {
                 const movieId = card.getAttribute('data-id');
                 showMovieDetails(movieId);
-            });
+            }
         });
-    }
+    });
 }
 
-// PLAY MOVIE FUNCTION - THE MAIN FEATURE!
+// PLAY MOVIE FUNCTION
 async function playMovie(movieId, movieTitle = 'Movie') {
     try {
         showVideoPlayer();
         elements.nowPlayingTitle.textContent = `Now Playing: ${movieTitle}`;
         
-        // Get download sources from YOUR API
-        const response = await fetch(`${API_BASE}/sources/${movieId}`);
-        const data = await response.json();
+        // Get download sources
+        const response = await fetch(`${API_BASE}/movies/${movieId}/sources`);
         
-        if (data.success && data.results.length > 0) {
-            const sources = data.results;
-            
-            // Populate quality selector
-            elements.qualitySelect.innerHTML = sources.map(source => 
-                `<option value="${source.download_url}">${source.quality}</option>`
-            ).join('');
-            
-            // Play the highest quality by default
-            const bestQuality = sources[0];
-            await playVideoStream(bestQuality.download_url);
-            
-            // Set download button
-            elements.downloadBtn.onclick = () => downloadFile(bestQuality.download_url, movieTitle);
-            
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data.sources.length > 0) {
+                const sources = data.data.sources;
+                setupVideoPlayer(sources, movieTitle);
+                return;
+            }
+        }
+        
+        // Fallback to external API
+        const externalResponse = await fetch(`${EXTERNAL_API}/sources/${movieId}`);
+        const externalData = await externalResponse.json();
+        
+        if (externalData.success && externalData.results.length > 0) {
+            const sources = externalData.results;
+            setupVideoPlayer(sources, movieTitle);
         } else {
             alert('No video sources available for this movie');
             hideVideoPlayer();
@@ -185,15 +321,34 @@ async function playMovie(movieId, movieTitle = 'Movie') {
     }
 }
 
-// Play Video Stream
+// Setup Video Player
+function setupVideoPlayer(sources, movieTitle) {
+    // Populate quality selector
+    elements.qualitySelect.innerHTML = sources.map(source => 
+        `<option value="${source.download_url}">${source.quality}</option>`
+    ).join('');
+
+    // Play the highest quality by default
+    const bestQuality = sources[0];
+    playVideoStream(bestQuality.download_url);
+    
+    // Set download button
+    elements.downloadBtn.onclick = () => downloadFile(bestQuality.download_url, movieTitle);
+    
+    // Quality change handler
+    elements.qualitySelect.onchange = (e) => {
+        const selectedUrl = e.target.value;
+        playVideoStream(selectedUrl);
+    };
+}
+
+// Play Video Stream (same as before)
 async function playVideoStream(videoUrl) {
     try {
-        // Set video source
         elements.player.innerHTML = `
             <source src="${videoUrl}" type="video/mp4">
         `;
         
-        // Initialize or update Plyr player
         if (plyrPlayer) {
             plyrPlayer.destroy();
         }
@@ -203,7 +358,6 @@ async function playVideoStream(videoUrl) {
             ratio: '16:9'
         });
         
-        // Load and play video
         await elements.player.load();
         await plyrPlayer.play();
         
@@ -213,152 +367,19 @@ async function playVideoStream(videoUrl) {
     }
 }
 
-// Show Video Player
+// Show/Hide Video Player (same as before)
 function showVideoPlayer() {
     elements.videoPlayerSection.style.display = 'flex';
     elements.mainContent.style.display = 'none';
     document.body.style.overflow = 'hidden';
 }
 
-// Hide Video Player
 function hideVideoPlayer() {
     elements.videoPlayerSection.style.display = 'none';
     elements.mainContent.style.display = 'block';
     document.body.style.overflow = 'auto';
-    
     if (plyrPlayer) {
         plyrPlayer.stop();
-    }
-}
-
-// Initialize Video Player
-function initializeVideoPlayer() {
-    // Quality change handler
-    elements.qualitySelect.addEventListener('change', async (e) => {
-        const selectedUrl = e.target.value;
-        const quality = e.target.options[e.target.selectedIndex].text;
-        
-        try {
-            await playVideoStream(selectedUrl);
-            // Update download button for new quality
-            elements.downloadBtn.onclick = () => downloadFile(selectedUrl, elements.nowPlayingTitle.textContent.replace('Now Playing: ', ''));
-        } catch (error) {
-            console.error('Error changing quality:', error);
-        }
-    });
-}
-
-// Download File
-function downloadFile(url, filename) {
-    // Create a temporary link for download
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${filename}.mp4`;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
-
-// Show Movie Details Modal
-async function showMovieDetails(movieId) {
-    try {
-        showLoadingModal();
-        
-        const response = await fetch(`${API_BASE}/info/${movieId}`);
-        const data = await response.json();
-        
-        if (data.success) {
-            const movie = data.results.subject;
-            displayMovieModal(movie);
-        } else {
-            showErrorModal('Failed to load movie details');
-        }
-    } catch (error) {
-        console.error('Error loading movie details:', error);
-        showErrorModal('Error loading movie details');
-    }
-}
-
-// Display Movie in Modal
-function displayMovieModal(movie) {
-    elements.modalBody.innerHTML = `
-        <div class="modal-movie">
-            <div class="modal-hero" style="background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('${movie.cover.url}') center/cover;">
-                <div class="modal-hero-content">
-                    <h2>${movie.title}</h2>
-                    <p class="modal-description">${movie.description || 'No description available.'}</p>
-                    <div class="modal-meta">
-                        <span><strong>Release:</strong> ${movie.releaseDate || 'N/A'}</span>
-                        <span><strong>Rating:</strong> ⭐ ${movie.imdbRatingValue || 'N/A'}</span>
-                        <span><strong>Genre:</strong> ${movie.genre || 'N/A'}</span>
-                        <span><strong>Duration:</strong> ${formatDuration(movie.duration)}</span>
-                    </div>
-                    <div class="modal-actions">
-                        <button class="btn btn-primary" onclick="playMovie('${movie.subjectId}', '${movie.title}')">
-                            <i class="fas fa-play"></i> Play Movie
-                        </button>
-                        <button class="btn btn-info" onclick="showDownloadOptions('${movie.subjectId}')">
-                            <i class="fas fa-download"></i> Download Options
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="download-options" id="downloadOptionsSection" style="display: none;">
-                <h3>Download Options</h3>
-                <div id="downloadOptionsList"></div>
-            </div>
-            
-            ${movie.stars && movie.stars.length > 0 ? `
-            <div class="modal-cast">
-                <h3>Cast</h3>
-                <div class="cast-grid">
-                    ${movie.stars.slice(0, 6).map(star => `
-                        <div class="cast-member">
-                            <img src="${star.avatarUrl || 'https://via.placeholder.com/80x80/333/fff?text=?'}" 
-                                 alt="${star.name}"
-                                 onerror="this.src='https://via.placeholder.com/80x80/333/fff?text=?'">
-                            <span class="cast-name">${star.name}</span>
-                            <span class="cast-character">${star.character}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            ` : ''}
-        </div>
-    `;
-    
-    elements.movieModal.style.display = 'block';
-}
-
-// Show Download Options in Modal
-async function showDownloadOptions(movieId) {
-    try {
-        const response = await fetch(`${API_BASE}/sources/${movieId}`);
-        const data = await response.json();
-        
-        if (data.success) {
-            const sources = data.results;
-            const downloadHTML = sources.map(source => `
-                <div class="download-option">
-                    <div>
-                        <span class="quality">${source.quality}</span>
-                        <span class="size">${formatFileSize(source.size)}</span>
-                    </div>
-                    <button class="btn btn-primary btn-sm" 
-                            onclick="downloadFile('${source.download_url}', '${movieId}-${source.quality}')">
-                        <i class="fas fa-download"></i> Download
-                    </button>
-                </div>
-            `).join('');
-            
-            document.getElementById('downloadOptionsList').innerHTML = downloadHTML;
-            document.getElementById('downloadOptionsSection').style.display = 'block';
-        }
-    } catch (error) {
-        console.error('Error loading download sources:', error);
-        alert('Error loading download options');
     }
 }
 
@@ -368,14 +389,23 @@ async function searchMovies(query) {
         showLoading(elements.searchGrid);
         elements.searchResults.style.display = 'block';
         
-        const response = await fetch(`${API_BASE}/search/${encodeURIComponent(query)}`);
-        const data = await response.json();
+        const response = await fetch(`${API_BASE}/movies/search?q=${encodeURIComponent(query)}`);
         
-        if (data.success && data.results.items.length > 0) {
-            displayMovies(data.results.items, elements.searchGrid, true);
-            currentMovies = data.results.items;
-            
-            // Scroll to search results
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data.movies.length > 0) {
+                displayMovies(data.data.movies, elements.searchGrid, true);
+                elements.searchResults.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+        }
+        
+        // Fallback to external API
+        const externalResponse = await fetch(`${EXTERNAL_API}/search/${encodeURIComponent(query)}`);
+        const externalData = await externalResponse.json();
+        
+        if (externalData.success && externalData.results.items.length > 0) {
+            displayMovies(externalData.results.items, elements.searchGrid, true);
             elements.searchResults.scrollIntoView({ behavior: 'smooth' });
         } else {
             elements.searchGrid.innerHTML = '<div class="no-results">No movies found. Try another search!</div>';
@@ -387,30 +417,36 @@ async function searchMovies(query) {
 }
 
 // Utility Functions
-function formatDuration(seconds) {
-    if (!seconds) return 'N/A';
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    return `${hours}h ${minutes}m`;
-}
-
-function formatFileSize(bytes) {
-    if (!bytes) return 'N/A';
-    const mb = Math.round(bytes / 1024 / 1024);
-    return `${mb} MB`;
-}
-
 function showLoading(element) {
     element.innerHTML = '<div class="loading">Loading...</div>';
 }
 
-function showLoadingModal() {
-    elements.modalBody.innerHTML = '<div class="loading">Loading movie details...</div>';
-    elements.movieModal.style.display = 'block';
+function closeModalById(modalId) {
+    document.getElementById(modalId).style.display = 'none';
 }
 
-function showErrorModal(message) {
-    elements.modalBody.innerHTML = `<div class="error">${message}</div>`;
+function showNotification(message, type = 'info') {
+    // Simple notification implementation
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 2rem;
+        background: ${type === 'error' ? '#e50914' : '#2ecc71'};
+        color: white;
+        border-radius: var(--border-radius);
+        z-index: 10000;
+        animation: slideInRight 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
 }
 
 // Event Listeners Setup
@@ -420,33 +456,64 @@ function setupEventListeners() {
     elements.searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleSearch();
     });
+    elements.clearSearch.addEventListener('click', () => {
+        elements.searchResults.style.display = 'none';
+        elements.searchInput.value = '';
+    });
+
+    // Auth functionality
+    elements.loginBtn.addEventListener('click', () => {
+        elements.loginModal.style.display = 'block';
+    });
+    elements.registerBtn.addEventListener('click', () => {
+        elements.registerModal.style.display = 'block';
+    });
+    elements.logoutBtn.addEventListener('click', logout);
+    elements.closeLoginModal.addEventListener('click', () => {
+        elements.loginModal.style.display = 'none';
+    });
+    elements.closeRegisterModal.addEventListener('click', () => {
+        elements.registerModal.style.display = 'none';
+    });
+
+    // Auth forms
+    elements.loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(elements.loginForm);
+        const email = formData.get('email') || elements.loginForm.querySelector('input[type="email"]').value;
+        const password = formData.get('password') || elements.loginForm.querySelector('input[type="password"]').value;
+        await login(email, password);
+    });
+
+    elements.registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(elements.registerForm);
+        const username = formData.get('username') || elements.registerForm.querySelector('input[type="text"]').value;
+        const email = formData.get('email') || elements.registerForm.querySelector('input[type="email"]').value;
+        const password = formData.get('password') || elements.registerForm.querySelector('input[type="password"]').value;
+        await register(username, email, password);
+    });
 
     // Video player back button
     elements.backToBrowse.addEventListener('click', hideVideoPlayer);
 
-    // Modal close
+    // Modal close events
     elements.closeModal.addEventListener('click', () => {
         elements.movieModal.style.display = 'none';
     });
 
-    // Close modal when clicking outside
-    elements.movieModal.addEventListener('click', (e) => {
-        if (e.target === elements.movieModal) {
-            elements.movieModal.style.display = 'none';
-        }
+    // Close modals when clicking outside
+    [elements.movieModal, elements.loginModal, elements.registerModal].forEach(modal => {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
     });
 
-    // Featured movie buttons
-    elements.playFeaturedBtn.addEventListener('click', () => {
-        if (featuredMovie) {
-            playMovie(featuredMovie.subjectId, featuredMovie.title);
-        }
-    });
-
-    elements.featuredInfoBtn.addEventListener('click', () => {
-        if (featuredMovie) {
-            showMovieDetails(featuredMovie.subjectId);
-        }
+    // Get started button
+    elements.getStartedBtn.addEventListener('click', () => {
+        elements.registerModal.style.display = 'block';
     });
 
     // Navbar scroll effect
@@ -457,18 +524,6 @@ function setupEventListeners() {
             elements.navbar.classList.remove('scrolled');
         }
     });
-
-    // Category navigation
-    document.querySelectorAll('.nav-link, .footer-section a[data-category]').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const category = link.getAttribute('data-category');
-            if (category) {
-                loadSection(category, category, elements.trendingGrid);
-                elements.searchResults.style.display = 'none';
-            }
-        });
-    });
 }
 
 function handleSearch() {
@@ -476,6 +531,30 @@ function handleSearch() {
     if (query) {
         searchMovies(query);
     }
+}
+
+// Initialize Video Player
+function initializeVideoPlayer() {
+    // Quality change handler
+    elements.qualitySelect.addEventListener('change', async (e) => {
+        const selectedUrl = e.target.value;
+        try {
+            await playVideoStream(selectedUrl);
+        } catch (error) {
+            console.error('Error changing quality:', error);
+        }
+    });
+}
+
+// Download File
+function downloadFile(url, filename) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}.mp4`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // Initialize app when DOM is loaded
