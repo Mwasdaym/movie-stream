@@ -14,77 +14,99 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// Cache for better performance
+// Cache
 const cache = new Map();
-const SEARCH_CACHE_DURATION = 10 * 60 * 1000;
 
-// SIMPLIFIED STREAMING ENDPOINT - FIXED!
+// PROPER VIDEO PROXY STREAMING - FIXED!
 app.get('/api/stream/:movieId', async (req, res) => {
     try {
         const { movieId } = req.params;
         const { quality = '720p' } = req.query;
 
-        console.log(`🎬 Streaming: ${movieId}, quality: ${quality}`);
+        console.log(`🎬 Streaming request: ${movieId}, quality: ${quality}`);
 
-        // Get video sources
-        const sourcesResponse = await axios.get(`https://movieapi.giftedtech.co.ke/api/sources/${movieId}`, {
-            timeout: 8000
-        });
+        // Get video sources from API
+        const sourcesResponse = await axios.get(`https://movieapi.giftedtech.co.ke/api/sources/${movieId}`);
         
-        if (!sourcesResponse.data.success) {
-            return res.status(404).json({ error: 'Movie not found' });
+        if (!sourcesResponse.data.success || !sourcesResponse.data.results.length) {
+            return res.status(404).json({ error: 'Movie sources not found' });
         }
 
         const sources = sourcesResponse.data.results;
         const selectedSource = sources.find(source => source.quality === quality) || sources[0];
-
-        if (!selectedSource) {
-            return res.status(404).json({ error: 'Quality not available' });
-        }
-
         const videoUrl = selectedSource.download_url;
-        
-        console.log(`📹 Proxying video: ${videoUrl}`);
-        
-        // SIMPLE PROXY APPROACH - Just pipe the video through
-        const videoResponse = await axios({
-            method: 'get',
-            url: videoUrl,
-            responseType: 'stream',
-            timeout: 30000
-        });
+
+        console.log(`📹 Streaming from: ${videoUrl}`);
 
         // Set proper video headers
         res.setHeader('Content-Type', 'video/mp4');
         res.setHeader('Accept-Ranges', 'bytes');
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range');
 
-        // Copy important headers from the source
+        // Proxy the video stream
+        const videoResponse = await axios({
+            method: 'get',
+            url: videoUrl,
+            responseType: 'stream',
+            timeout: 30000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'video/mp4,video/*;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'identity',
+                'Range': req.headers.range || 'bytes=0-'
+            }
+        });
+
+        // Forward content headers
         if (videoResponse.headers['content-length']) {
             res.setHeader('Content-Length', videoResponse.headers['content-length']);
         }
+        if (videoResponse.headers['content-range']) {
+            res.setHeader('Content-Range', videoResponse.headers['content-range']);
+        }
+        if (videoResponse.headers['content-type']) {
+            res.setHeader('Content-Type', videoResponse.headers['content-type']);
+        }
 
-        // Pipe the video directly to the client
+        // Handle response status for range requests
+        if (req.headers.range && videoResponse.status === 206) {
+            res.status(206);
+        }
+
+        console.log(`✅ Streaming video with Content-Type: ${res.getHeader('Content-Type')}`);
+
+        // Pipe the video stream to client
         videoResponse.data.pipe(res);
+
+        // Handle stream errors
+        videoResponse.data.on('error', (error) => {
+            console.error('Stream error:', error);
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'Stream failed' });
+            }
+        });
 
     } catch (error) {
         console.error('❌ Streaming error:', error.message);
-        res.status(500).json({ 
-            success: false,
-            error: 'Streaming failed',
-            message: error.message 
-        });
+        if (!res.headersSent) {
+            res.status(500).json({ 
+                success: false,
+                error: 'Streaming failed',
+                message: error.message,
+                tip: 'The video source might be blocked or unavailable'
+            });
+        }
     }
 });
 
-// DIRECT VIDEO REDIRECT (Simple alternative)
+// DIRECT VIDEO URL ENDPOINT (for testing)
 app.get('/api/video/:movieId', async (req, res) => {
     try {
         const { movieId } = req.params;
         const { quality = '720p' } = req.query;
-
-        console.log(`🎬 Direct video redirect: ${movieId}`);
 
         const sourcesResponse = await axios.get(`https://movieapi.giftedtech.co.ke/api/sources/${movieId}`);
         
@@ -99,101 +121,91 @@ app.get('/api/video/:movieId', async (req, res) => {
             return res.status(404).json({ error: 'Quality not available' });
         }
 
-        const videoUrl = selectedSource.download_url;
-        
-        console.log(`🔗 Redirecting to: ${videoUrl}`);
-        
-        // Simple redirect - let the browser handle the video directly
-        res.redirect(videoUrl);
+        // Return the direct video URL for frontend to use
+        res.json({
+            success: true,
+            videoUrl: selectedSource.download_url,
+            quality: selectedSource.quality,
+            directLink: selectedSource.download_url
+        });
 
     } catch (error) {
-        console.error('Direct video error:', error);
-        res.status(500).json({ error: 'Video failed' });
+        console.error('Video URL error:', error);
+        res.status(500).json({ error: 'Failed to get video URL' });
     }
 });
 
-// TEST VIDEO ENDPOINT - UPDATED
-app.get('/api/test-video', async (req, res) => {
+// TEST VIDEO STREAMING ENDPOINT
+app.get('/api/test-stream', async (req, res) => {
     try {
-        // Test with a known working movie
-        const testMovieId = '5099284245269335848'; // Black Panther
+        // Test with a known movie
+        const testMovieId = '5099284245269335848';
         const sourcesResponse = await axios.get(`https://movieapi.giftedtech.co.ke/api/sources/${testMovieId}`);
         
         if (sourcesResponse.data.success && sourcesResponse.data.results.length > 0) {
             const videoUrl = sourcesResponse.data.results[0].download_url;
             
+            // Test if we can access the video
+            const headResponse = await axios.head(videoUrl, {
+                timeout: 10000,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Range': 'bytes=0-1'
+                }
+            });
+
             res.json({
                 success: true,
                 videoUrl: videoUrl,
                 streamUrl: `/api/stream/${testMovieId}`,
-                directUrl: `/api/video/${testMovieId}`,
-                message: 'Video test successful - try both endpoints'
+                contentType: headResponse.headers['content-type'],
+                contentLength: headResponse.headers['content-length'],
+                acceptsRange: headResponse.headers['accept-ranges'] === 'bytes',
+                status: 'Video source is accessible'
             });
         } else {
             res.json({
                 success: false,
-                message: 'No video sources found'
+                message: 'No video sources found for test movie'
             });
         }
     } catch (error) {
         res.json({
             success: false,
             message: 'Video test failed',
-            error: error.message
+            error: error.message,
+            tip: 'The video source might be blocked by CORS or require specific headers'
         });
     }
 });
 
-// Enhanced search with caching
+// Search endpoint
 app.get('/api/search/:query', async (req, res) => {
     try {
         const { query } = req.params;
-        const cacheKey = `search-${query}`;
         
-        if (cache.has(cacheKey)) {
-            const cached = cache.get(cacheKey);
-            if (Date.now() - cached.timestamp < SEARCH_CACHE_DURATION) {
-                console.log('💾 Serving from cache:', query);
-                return res.json(cached.data);
-            }
-        }
-        
-        console.log(`🔍 Searching for: ${query}`);
-        
-        const response = await axios.get(`https://movieapi.giftedtech.co.ke/api/search/${encodeURIComponent(query)}`, {
-            timeout: 10000
-        });
-        
-        console.log('✅ Search successful, found:', response.data.results?.items?.length || 0, 'movies');
-        
-        cache.set(cacheKey, {
-            timestamp: Date.now(),
-            data: response.data
-        });
+        console.log(`🔍 Searching: ${query}`);
+        const response = await axios.get(`https://movieapi.giftedtech.co.ke/api/search/${encodeURIComponent(query)}`);
         
         res.json(response.data);
         
     } catch (error) {
-        console.error('❌ Search error:', error.message);
-        res.status(500).json({ 
-            success: false,
-            error: 'Search failed',
-            message: error.message 
-        });
+        console.error('Search error:', error.message);
+        res.status(500).json({ error: 'Search failed' });
     }
 });
 
-// Get trending movies
+// Trending movies
 app.get('/api/trending', async (req, res) => {
     try {
-        const trendingQueries = ['avengers', 'spider man', 'batman', 'superman', 'iron man'];
+        const trendingQueries = ['avengers', 'spider man', 'batman', 'john wick', 'mission impossible'];
         const allMovies = [];
         
         for (const query of trendingQueries) {
             try {
                 const response = await axios.get(`https://movieapi.giftedtech.co.ke/api/search/${encodeURIComponent(query)}`);
                 if (response.data.success && response.data.results.items) {
-                    allMovies.push(...response.data.results.items.slice(0, 5));
+                    allMovies.push(...response.data.results.items.slice(0, 4));
                 }
             } catch (error) {
                 console.error(`Error fetching ${query}:`, error.message);
@@ -214,7 +226,7 @@ app.get('/api/trending', async (req, res) => {
     }
 });
 
-// Enhanced qualities endpoint
+// Qualities endpoint
 app.get('/api/qualities/:movieId', async (req, res) => {
     try {
         const { movieId } = req.params;
@@ -226,8 +238,8 @@ app.get('/api/qualities/:movieId', async (req, res) => {
                 size: source.size,
                 format: source.format,
                 stream_url: `/api/stream/${movieId}?quality=${source.quality}`,
-                direct_url: `/api/video/${movieId}?quality=${source.quality}`,
-                download_url: `/api/download/${movieId}?quality=${source.quality}`
+                video_url: `/api/video/${movieId}?quality=${source.quality}`,
+                direct_url: source.download_url
             }));
             
             res.json({ 
@@ -250,8 +262,6 @@ app.get('/api/download/:movieId', async (req, res) => {
         const { movieId } = req.params;
         const { quality = '720p' } = req.query;
 
-        console.log(`📥 Downloading: ${movieId}, quality: ${quality}`);
-
         const sourcesResponse = await axios.get(`https://movieapi.giftedtech.co.ke/api/sources/${movieId}`);
         
         if (!sourcesResponse.data.success) {
@@ -265,18 +275,14 @@ app.get('/api/download/:movieId', async (req, res) => {
             return res.status(404).json({ error: 'Quality not available' });
         }
 
-        const movieInfo = await axios.get(`https://movieapi.giftedtech.co.ke/api/info/${movieId}`);
-        const movieTitle = movieInfo.data.success ? 
-            movieInfo.data.results.subject.title : `movie-${movieId}`;
-        
-        const safeTitle = movieTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const videoUrl = selectedSource.download_url;
 
-        res.setHeader('Content-Disposition', `attachment; filename="${safeTitle}-${quality}.mp4"`);
+        res.setHeader('Content-Disposition', `attachment; filename="movie-${movieId}-${quality}.mp4"`);
         res.setHeader('Content-Type', 'video/mp4');
 
         const videoResponse = await axios({
             method: 'get',
-            url: selectedSource.download_url,
+            url: videoUrl,
             responseType: 'stream',
             timeout: 60000
         });
@@ -295,7 +301,7 @@ app.get('/api/health', (req, res) => {
         status: 'OK', 
         message: 'StreamFlix Server Running 🚀',
         timestamp: new Date().toISOString(),
-        cacheSize: cache.size
+        features: ['Video Streaming', 'Search', 'Download', 'Quality Selection']
     });
 });
 
@@ -307,14 +313,13 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`
-    🚀 STREAMFLIX SERVER (SIMPLIFIED STREAMING)
-    ==========================================
+    🚀 STREAMFLIX SERVER (FIXED STREAMING)
+    ======================================
     📍 Port: ${PORT}
-    ⏰ Started: ${new Date().toISOString()}
-    🎬 Streaming: SIMPLIFIED & FIXED
-    📹 Direct Video: ENABLED
-    ==========================================
+    🎬 Streaming: PROPER PROXY
+    📹 Video Headers: FIXED
+    🔧 Test: http://localhost:${PORT}/api/test-stream
+    ======================================
     `);
     console.log(`🌐 Open http://localhost:${PORT} in your browser`);
-    console.log(`🔧 Test video: http://localhost:${PORT}/api/test-video`);
 });
