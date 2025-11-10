@@ -1,5 +1,5 @@
 // =====================
-// FIXED VIDEO STREAMING FUNCTIONS
+// FIXED VIDEO PLAYBACK USING STREAM URLS
 // =====================
 async function playMovie(movieId, movieTitle) {
     try {
@@ -8,56 +8,41 @@ async function playMovie(movieId, movieTitle) {
         
         elements.nowPlaying.textContent = `Now Playing: ${movieTitle}`;
         showVideoPlayer();
-        showNotification('Loading movie...', 'info');
+        showNotification('Loading video stream...', 'info');
         
-        // Load available qualities
+        // Load available qualities first
         await loadQualities(movieId);
         
-        // Try streaming first, then fallback to direct URL
-        await tryStreamingMethods(movieId);
+        // Play using the stream URL directly
+        await playWithStreamUrl(movieId);
         
     } catch (error) {
         console.error('Play error:', error);
-        showStreamingError('Failed to play movie. Please try another quality or movie.');
+        showStreamingError('Failed to play movie: ' + error.message);
     }
 }
 
-async function tryStreamingMethods(movieId) {
+async function playWithStreamUrl(movieId) {
     const quality = elements.qualitySelect.value;
     
-    console.log('🔄 Trying streaming methods...');
+    console.log(`🎬 Playing: ${movieId} [${quality}]`);
     
-    // Method 1: Use our streaming endpoint
     try {
-        console.log('🎬 Method 1: Using streaming endpoint');
-        await playWithStreamEndpoint(movieId, quality);
-        return; // Success
-    } catch (error1) {
-        console.log('❌ Method 1 failed:', error1.message);
-    }
-    
-    // Method 2: Use direct video URL
-    try {
-        console.log('🎬 Method 2: Using direct video URL');
-        await playWithDirectUrl(movieId, quality);
-        return; // Success
-    } catch (error2) {
-        console.log('❌ Method 2 failed:', error2.message);
-    }
-    
-    // All methods failed
-    throw new Error('All streaming methods failed');
-}
-
-async function playWithStreamEndpoint(movieId, quality) {
-    return new Promise((resolve, reject) => {
-        const streamUrl = `${API_BASE}/api/stream/${movieId}?quality=${quality}`;
-        console.log(`📹 Streaming from: ${streamUrl}`);
+        // Get the stream URL from our API
+        const response = await fetch(`${API_BASE}/api/video/${movieId}?quality=${quality}`);
+        const data = await response.json();
         
-        // Clear previous source
+        if (!data.success) {
+            throw new Error('Failed to get stream URL');
+        }
+        
+        const streamUrl = data.streamUrl;
+        console.log(`📹 Stream URL: ${streamUrl}`);
+        
+        // Clear previous video
         elements.videoElement.innerHTML = '';
         
-        // Create source element
+        // Create video source with the stream URL
         const source = document.createElement('source');
         source.src = streamUrl;
         source.type = 'video/mp4';
@@ -65,94 +50,47 @@ async function playWithStreamEndpoint(movieId, quality) {
         elements.videoElement.appendChild(source);
         elements.videoElement.load();
         
-        // Set up event listeners
-        const errorHandler = () => {
-            reject(new Error('Stream endpoint failed'));
-        };
-        
-        const loadHandler = () => {
-            console.log('✅ Stream loaded successfully');
-            resolve();
-        };
-        
-        elements.videoElement.addEventListener('error', errorHandler, { once: true });
-        elements.videoElement.addEventListener('loadeddata', loadHandler, { once: true });
-        
-        // Try to play
-        elements.videoElement.play().catch(playError => {
-            console.log('⏸️ Auto-play prevented, waiting for user');
-            // Don't reject for autoplay issues
-        });
-        
-        // Timeout after 15 seconds
-        setTimeout(() => {
-            if (elements.videoElement.readyState < 2) {
-                reject(new Error('Stream loading timeout'));
-            }
-        }, 15000);
-    });
-}
-
-async function playWithDirectUrl(movieId, quality) {
-    return new Promise(async (resolve, reject) => {
-        try {
-            // Get direct video URL from API
-            const response = await fetch(`${API_BASE}/api/video/${movieId}?quality=${quality}`);
-            const data = await response.json();
-            
-            if (!data.success) {
-                reject(new Error('Failed to get direct URL'));
-                return;
-            }
-            
-            const videoUrl = data.videoUrl;
-            console.log(`🔗 Direct video URL: ${videoUrl}`);
-            
-            // Clear previous source
-            elements.videoElement.innerHTML = '';
-            
-            // Create source element
-            const source = document.createElement('source');
-            source.src = videoUrl;
-            source.type = 'video/mp4';
-            
-            elements.videoElement.appendChild(source);
-            elements.videoElement.load();
-            
-            // Set up event listeners
-            const errorHandler = () => {
-                reject(new Error('Direct URL failed'));
-            };
-            
-            const loadHandler = () => {
-                console.log('✅ Direct URL loaded successfully');
+        // Wait for video to load
+        await new Promise((resolve, reject) => {
+            const loadedHandler = () => {
+                console.log('✅ Video stream loaded successfully');
                 resolve();
             };
             
-            elements.videoElement.addEventListener('error', errorHandler, { once: true });
-            elements.videoElement.addEventListener('loadeddata', loadHandler, { once: true });
+            const errorHandler = () => {
+                reject(new Error('Video failed to load'));
+            };
             
-            // Try to play
-            elements.videoElement.play().catch(playError => {
-                console.log('⏸️ Auto-play prevented for direct URL');
-            });
+            elements.videoElement.addEventListener('loadeddata', loadedHandler, { once: true });
+            elements.videoElement.addEventListener('error', errorHandler, { once: true });
             
             // Timeout after 15 seconds
             setTimeout(() => {
                 if (elements.videoElement.readyState < 2) {
-                    reject(new Error('Direct URL loading timeout'));
+                    reject(new Error('Video loading timeout'));
                 }
             }, 15000);
-            
-        } catch (error) {
-            reject(error);
+        });
+        
+        // Try to play
+        try {
+            await elements.videoElement.play();
+            console.log('✅ Video playback started');
+            showNotification('Video playback started', 'success');
+        } catch (playError) {
+            console.log('⏸️ Auto-play prevented, click play to start');
+            showNotification('Click play to start video', 'info');
         }
-    });
+        
+    } catch (error) {
+        console.error('Stream playback error:', error);
+        throw error;
+    }
 }
 
 async function handleQualityChange() {
     if (currentMovieId) {
         showNotification('Changing quality...', 'info');
-        await tryStreamingMethods(currentMovieId);
+        await playWithStreamUrl(currentMovieId);
     }
 }
