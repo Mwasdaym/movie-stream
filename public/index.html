@@ -259,6 +259,7 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
+            testAPI();
             loadDefaultMovies();
         });
 
@@ -274,10 +275,23 @@
             elements.downloadBtn.addEventListener('click', handleDownload);
         }
 
+        // Test API connection
+        async function testAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/api/test`);
+                const data = await response.json();
+                console.log('API Test:', data);
+            } catch (error) {
+                console.error('API Test failed:', error);
+            }
+        }
+
         function handleSearch() {
             const query = elements.searchInput.value.trim();
             if (query) {
                 searchMovies(query);
+            } else {
+                searchMovies('avengers');
             }
         }
 
@@ -286,40 +300,68 @@
             await searchMovies('avengers');
         }
 
-        // Search movies
+        // FIXED SEARCH FUNCTION
         async function searchMovies(query) {
             try {
                 elements.moviesGrid.innerHTML = '<div class="loading">Searching movies...</div>';
+                console.log(`🔍 Searching for: ${query}`);
                 
                 const response = await fetch(`${API_BASE}/api/search/${encodeURIComponent(query)}`);
-                const data = await response.json();
                 
-                if (data.success && data.results.items.length > 0) {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('📊 Search response:', data);
+                
+                if (data.success && data.results && data.results.items && data.results.items.length > 0) {
                     displayMovies(data.results.items);
                 } else {
-                    elements.moviesGrid.innerHTML = '<div class="error">No movies found</div>';
+                    elements.moviesGrid.innerHTML = '<div class="error">No movies found. Try another search.</div>';
                 }
             } catch (error) {
-                console.error('Search error:', error);
-                elements.moviesGrid.innerHTML = '<div class="error">Error searching movies</div>';
+                console.error('❌ Search error:', error);
+                elements.moviesGrid.innerHTML = `
+                    <div class="error">
+                        <p>Search failed: ${error.message}</p>
+                        <p>Try searching for: "avengers", "spider man", "batman"</p>
+                        <button class="btn" onclick="searchMovies('avengers')" style="margin-top: 10px;">
+                            Try Sample Search
+                        </button>
+                    </div>
+                `;
             }
         }
 
         // Display movies
         function displayMovies(movies) {
-            elements.moviesGrid.innerHTML = movies.map(movie => `
-                <div class="movie-card" onclick="playMovie('${movie.subjectId}', '${movie.title.replace(/'/g, "\\'")}')">
-                    <img src="${movie.cover.url}" alt="${movie.title}" class="movie-poster"
-                         onerror="this.src='https://via.placeholder.com/200x300/333/fff?text=No+Image'">
-                    <div class="movie-info">
-                        <div class="movie-title">${movie.title}</div>
-                        <div class="movie-meta">
-                            ${movie.releaseDate ? movie.releaseDate.split('-')[0] : 'N/A'} • 
-                            ⭐ ${movie.imdbRatingValue || 'N/A'}
+            if (!movies || movies.length === 0) {
+                elements.moviesGrid.innerHTML = '<div class="error">No movies found</div>';
+                return;
+            }
+
+            elements.moviesGrid.innerHTML = movies.map(movie => {
+                // Handle missing data safely
+                const title = movie.title || 'Unknown Title';
+                const poster = movie.cover?.url || 'https://via.placeholder.com/200x300/333/fff?text=No+Image';
+                const year = movie.releaseDate ? movie.releaseDate.split('-')[0] : 'N/A';
+                const rating = movie.imdbRatingValue || 'N/A';
+                const movieId = movie.subjectId || Math.random().toString(36).substr(2, 9);
+
+                return `
+                    <div class="movie-card" onclick="playMovie('${movieId}', '${title.replace(/'/g, "\\'")}')">
+                        <img src="${poster}" alt="${title}" class="movie-poster"
+                             onerror="this.src='https://via.placeholder.com/200x300/333/fff?text=No+Image'">
+                        <div class="movie-info">
+                            <div class="movie-title">${title}</div>
+                            <div class="movie-meta">
+                                ${year} • ⭐ ${rating}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Play movie
@@ -340,7 +382,7 @@
                 
             } catch (error) {
                 console.error('Play error:', error);
-                alert('Error playing movie');
+                alert('Error playing movie: ' + error.message);
                 hideVideoPlayer();
             }
         }
@@ -351,13 +393,26 @@
                 const response = await fetch(`${API_BASE}/api/qualities/${movieId}`);
                 const data = await response.json();
                 
-                if (data.success) {
+                if (data.success && data.qualities) {
                     elements.qualitySelect.innerHTML = data.qualities.map(q => 
                         `<option value="${q.quality}">${q.quality} (${formatFileSize(q.size)})</option>`
                     ).join('');
+                } else {
+                    // Default qualities as fallback
+                    elements.qualitySelect.innerHTML = `
+                        <option value="720p">720p HD</option>
+                        <option value="480p">480p</option>
+                        <option value="360p">360p</option>
+                    `;
                 }
             } catch (error) {
                 console.error('Qualities error:', error);
+                // Fallback qualities
+                elements.qualitySelect.innerHTML = `
+                    <option value="720p">720p HD</option>
+                    <option value="480p">480p</option>
+                    <option value="360p">360p</option>
+                `;
             }
         }
 
@@ -366,7 +421,7 @@
             try {
                 const streamUrl = `${API_BASE}/api/stream/${currentMovieId}?quality=${quality}`;
                 
-                console.log('Streaming from:', streamUrl);
+                console.log('🎬 Streaming from:', streamUrl);
                 
                 // Set video source
                 elements.videoElement.src = streamUrl;
@@ -374,16 +429,26 @@
                 // Load and play
                 await elements.videoElement.load();
                 
+                // Show loading state
+                elements.videoElement.addEventListener('waiting', () => {
+                    console.log('⏳ Video buffering...');
+                });
+                
+                elements.videoElement.addEventListener('canplay', () => {
+                    console.log('✅ Video ready to play');
+                });
+                
                 // Try to play automatically
                 try {
                     await elements.videoElement.play();
+                    console.log('▶️ Video playing');
                 } catch (playError) {
-                    console.log('Auto-play prevented, user must click play');
+                    console.log('⏸️ Auto-play prevented, user must click play');
                 }
                 
             } catch (error) {
                 console.error('Play quality error:', error);
-                alert('Error playing this quality');
+                alert('Error playing this quality: ' + error.message);
             }
         }
 
@@ -400,6 +465,8 @@
             if (currentMovieId && currentMovieTitle) {
                 const quality = elements.qualitySelect.value;
                 const downloadUrl = `${API_BASE}/api/download/${currentMovieId}?quality=${quality}`;
+                
+                console.log('📥 Downloading from:', downloadUrl);
                 
                 // Create download link
                 const link = document.createElement('a');
