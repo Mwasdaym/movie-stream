@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamFlix - Watch Movies in HD</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <title>StreamFlix - Watch Movies</title>
     <style>
         * {
             margin: 0;
@@ -13,103 +11,86 @@
             box-sizing: border-box;
         }
 
-        :root {
-            --primary: #e50914;
-            --secondary: #000000;
-            --background: #141414;
-            --text-primary: #ffffff;
-            --text-secondary: #b3b3b3;
-        }
-
         body {
-            font-family: 'Arial', sans-serif;
-            background: var(--background);
-            color: var(--text-primary);
+            font-family: Arial, sans-serif;
+            background: #141414;
+            color: white;
             line-height: 1.6;
         }
 
-        /* Navigation */
-        .navbar {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
-            padding: 1.5rem 4%;
-            z-index: 1000;
+        /* Header */
+        .header {
+            background: #000;
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
         }
 
-        .nav-logo {
+        .logo {
+            color: #e50914;
             font-size: 1.8rem;
             font-weight: bold;
-            color: var(--primary);
         }
 
         .search-box {
             display: flex;
-            background: rgba(255,255,255,0.1);
-            border-radius: 25px;
-            overflow: hidden;
         }
 
         .search-box input {
-            background: transparent;
+            padding: 0.5rem 1rem;
             border: none;
-            padding: 0.8rem 1.5rem;
-            color: white;
+            border-radius: 4px 0 0 4px;
             width: 300px;
-            outline: none;
         }
 
         .search-box button {
-            background: transparent;
-            border: none;
-            padding: 0.8rem 1.2rem;
+            padding: 0.5rem 1rem;
+            background: #e50914;
             color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
             cursor: pointer;
         }
 
-        /* Hero Section */
-        .hero-banner {
-            height: 80vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 0 4%;
-            background: linear-gradient(45deg, #000, var(--primary));
+        /* Main Content */
+        .main-content {
+            margin-top: 80px;
+            padding: 2rem;
         }
 
-        .hero-content h1 {
-            font-size: 3.5rem;
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(45deg, #000, #e50914);
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
             margin-bottom: 1rem;
         }
 
-        .hero-content p {
+        .hero p {
             font-size: 1.2rem;
             margin-bottom: 2rem;
-            color: var(--text-secondary);
+            opacity: 0.8;
         }
 
         .btn {
             padding: 1rem 2rem;
+            background: #e50914;
+            color: white;
             border: none;
             border-radius: 5px;
-            font-weight: bold;
+            font-size: 1.1rem;
             cursor: pointer;
             margin: 0 0.5rem;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.2);
-            color: white;
         }
 
         /* Movies Grid */
@@ -117,12 +98,12 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 1.5rem;
-            padding: 2rem 4%;
+            margin-top: 2rem;
         }
 
         .movie-card {
             background: #2f2f2f;
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
             transition: transform 0.3s;
             cursor: pointer;
@@ -147,46 +128,52 @@
             margin-bottom: 0.5rem;
         }
 
+        .movie-meta {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
         /* Video Player */
-        .video-player-section {
+        .video-player {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100vh;
+            height: 100%;
             background: #000;
             z-index: 2000;
             display: none;
             flex-direction: column;
         }
 
-        .player-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-
         .player-header {
+            padding: 1rem;
+            background: rgba(0,0,0,0.8);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 0;
-            margin-bottom: 1rem;
         }
 
-        #player {
-            width: 100%;
-            height: 70vh;
-            background: #000;
+        .player-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #videoElement {
+            width: 90%;
+            max-width: 1200px;
+            height: auto;
+            max-height: 80vh;
         }
 
         .player-controls {
+            padding: 1rem;
+            background: rgba(0,0,0,0.8);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem;
-            background: rgba(255,255,255,0.1);
         }
 
         /* Loading */
@@ -196,150 +183,107 @@
             font-size: 1.2rem;
         }
 
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 3000;
-        }
-
-        .modal-content {
-            position: relative;
-            background: var(--background);
-            margin: 5% auto;
-            width: 90%;
-            max-width: 800px;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            font-size: 2rem;
-            color: white;
-            cursor: pointer;
-            z-index: 3001;
+        .error {
+            text-align: center;
+            padding: 2rem;
+            color: #e50914;
+            font-size: 1.2rem;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-logo">
-            <i class="fas fa-play-circle"></i> StreamFlix
-        </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">🎬 StreamFlix</div>
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="Search movies...">
-            <button id="searchBtn"><i class="fas fa-search"></i></button>
+            <button id="searchBtn">Search</button>
         </div>
-    </nav>
-
-    <!-- Video Player -->
-    <section class="video-player-section" id="videoPlayerSection">
-        <div class="player-container">
-            <div class="player-header">
-                <button class="btn btn-secondary" id="backToBrowse">
-                    <i class="fas fa-arrow-left"></i> Back
-                </button>
-                <h2 id="nowPlayingTitle">Now Playing</h2>
-            </div>
-            <video id="player" playsinline controls crossorigin="anonymous">
-                Your browser doesn't support HTML5 video.
-            </video>
-            <div class="player-controls">
-                <div class="quality-selector">
-                    <label>Quality:</label>
-                    <select id="qualitySelect">
-                        <option value="720p">720p HD</option>
-                        <option value="480p">480p</option>
-                        <option value="360p">360p</option>
-                    </select>
-                </div>
-                <div class="player-actions">
-                    <button class="btn btn-primary" id="downloadBtn">
-                        <i class="fas fa-download"></i> Download
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
+    </header>
 
     <!-- Main Content -->
-    <main>
-        <!-- Hero -->
-        <section class="hero-banner">
-            <div class="hero-content">
-                <h1>Unlimited Movies, TV Shows, and More</h1>
-                <p>Watch anywhere. Stream anytime. Join StreamFlix today.</p>
-                <div>
-                    <button class="btn btn-primary" onclick="searchMovies('avengers')">
-                        <i class="fas fa-play"></i> Watch Now
-                    </button>
-                    <button class="btn btn-secondary" onclick="searchMovies('action')">
-                        <i class="fas fa-info"></i> Learn More
-                    </button>
-                </div>
-            </div>
+    <main class="main-content">
+        <section class="hero">
+            <h1>Unlimited Movies & TV Shows</h1>
+            <p>Watch anywhere. Stream anytime. Join millions of happy users.</p>
+            <button class="btn" onclick="searchMovies('avengers')">Start Watching</button>
         </section>
 
-        <!-- Movies Grid -->
         <section id="moviesSection">
+            <h2>Popular Movies</h2>
             <div class="movies-grid" id="moviesGrid">
-                <div class="loading">Search for movies to get started...</div>
+                <div class="loading">Loading movies...</div>
             </div>
         </section>
     </main>
 
-    <!-- Scripts -->
-    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <!-- Video Player -->
+    <div class="video-player" id="videoPlayer">
+        <div class="player-header">
+            <h3 id="nowPlaying">Now Playing</h3>
+            <button class="btn" onclick="hideVideoPlayer()">Close</button>
+        </div>
+        <div class="player-content">
+            <video id="videoElement" controls crossorigin="anonymous">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <div class="player-controls">
+            <select id="qualitySelect">
+                <option value="720p">720p HD</option>
+                <option value="480p">480p</option>
+                <option value="360p">360p</option>
+            </select>
+            <button class="btn" id="downloadBtn">Download</button>
+        </div>
+    </div>
+
     <script>
         const API_BASE = window.location.origin;
-        let plyrPlayer = null;
 
         // DOM Elements
         const elements = {
-            videoPlayerSection: document.getElementById('videoPlayerSection'),
-            player: document.getElementById('player'),
-            backToBrowse: document.getElementById('backToBrowse'),
-            nowPlayingTitle: document.getElementById('nowPlayingTitle'),
-            qualitySelect: document.getElementById('qualitySelect'),
-            downloadBtn: document.getElementById('downloadBtn'),
             searchInput: document.getElementById('searchInput'),
             searchBtn: document.getElementById('searchBtn'),
-            moviesGrid: document.getElementById('moviesGrid')
+            moviesGrid: document.getElementById('moviesGrid'),
+            videoPlayer: document.getElementById('videoPlayer'),
+            videoElement: document.getElementById('videoElement'),
+            nowPlaying: document.getElementById('nowPlaying'),
+            qualitySelect: document.getElementById('qualitySelect'),
+            downloadBtn: document.getElementById('downloadBtn')
         };
+
+        let currentMovieId = null;
+        let currentMovieTitle = null;
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
-            searchMovies('avengers'); // Load default movies
+            loadDefaultMovies();
         });
 
         function setupEventListeners() {
             // Search
-            elements.searchBtn.addEventListener('click', () => {
-                const query = elements.searchInput.value.trim();
-                if (query) searchMovies(query);
-            });
-
-            elements.searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const query = elements.searchInput.value.trim();
-                    if (query) searchMovies(query);
-                }
+            elements.searchBtn.addEventListener('click', handleSearch);
+            elements.searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') handleSearch();
             });
 
             // Video player
-            elements.backToBrowse.addEventListener('click', hideVideoPlayer);
             elements.qualitySelect.addEventListener('change', handleQualityChange);
             elements.downloadBtn.addEventListener('click', handleDownload);
+        }
+
+        function handleSearch() {
+            const query = elements.searchInput.value.trim();
+            if (query) {
+                searchMovies(query);
+            }
+        }
+
+        // Load default movies
+        async function loadDefaultMovies() {
+            await searchMovies('avengers');
         }
 
         // Search movies
@@ -353,23 +297,23 @@
                 if (data.success && data.results.items.length > 0) {
                     displayMovies(data.results.items);
                 } else {
-                    elements.moviesGrid.innerHTML = '<div class="loading">No movies found</div>';
+                    elements.moviesGrid.innerHTML = '<div class="error">No movies found</div>';
                 }
             } catch (error) {
                 console.error('Search error:', error);
-                elements.moviesGrid.innerHTML = '<div class="loading">Error searching movies</div>';
+                elements.moviesGrid.innerHTML = '<div class="error">Error searching movies</div>';
             }
         }
 
         // Display movies
         function displayMovies(movies) {
             elements.moviesGrid.innerHTML = movies.map(movie => `
-                <div class="movie-card" onclick="showMovieDetails('${movie.subjectId}')">
-                    <img src="${movie.cover.url}" alt="${movie.title}" class="movie-poster" 
+                <div class="movie-card" onclick="playMovie('${movie.subjectId}', '${movie.title.replace(/'/g, "\\'")}')">
+                    <img src="${movie.cover.url}" alt="${movie.title}" class="movie-poster"
                          onerror="this.src='https://via.placeholder.com/200x300/333/fff?text=No+Image'">
                     <div class="movie-info">
                         <div class="movie-title">${movie.title}</div>
-                        <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                        <div class="movie-meta">
                             ${movie.releaseDate ? movie.releaseDate.split('-')[0] : 'N/A'} • 
                             ⭐ ${movie.imdbRatingValue || 'N/A'}
                         </div>
@@ -378,184 +322,115 @@
             `).join('');
         }
 
-        // Show movie details and play options
-        async function showMovieDetails(movieId) {
-            try {
-                const response = await fetch(`${API_BASE}/api/movie/${movieId}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    const movie = data.results.subject;
-                    showPlayOptions(movieId, movie.title);
-                }
-            } catch (error) {
-                console.error('Movie details error:', error);
-            }
-        }
-
-        // Show play options
-        function showPlayOptions(movieId, movieTitle) {
-            const play = confirm(`Play "${movieTitle}"?`);
-            if (play) {
-                playMovie(movieId, movieTitle);
-            }
-        }
-
-        // PLAY MOVIE - PROPER STREAMING
+        // Play movie
         async function playMovie(movieId, movieTitle) {
             try {
+                currentMovieId = movieId;
+                currentMovieTitle = movieTitle;
+                
+                elements.nowPlaying.textContent = `Now Playing: ${movieTitle}`;
                 showVideoPlayer();
-                elements.nowPlayingTitle.textContent = `Now Playing: ${movieTitle}`;
                 
-                // Get available qualities
-                const qualitiesResponse = await fetch(`${API_BASE}/api/stream/${movieId}/qualities`);
-                const qualitiesData = await qualitiesResponse.json();
+                // Load qualities
+                await loadQualities(movieId);
                 
-                if (qualitiesData.success && qualitiesData.data.qualities.length > 0) {
-                    const qualities = qualitiesData.data.qualities;
-                    
-                    // Populate quality selector
-                    elements.qualitySelect.innerHTML = qualities.map(quality => 
-                        `<option value="${quality.quality}">${quality.quality}</option>`
-                    ).join('');
-                    
-                    // Play the best quality
-                    const bestQuality = qualities[0];
-                    await setupVideoPlayer(movieId, bestQuality.quality, movieTitle);
-                } else {
-                    alert('No streaming sources available');
-                    hideVideoPlayer();
-                }
+                // Play with default quality
+                const quality = elements.qualitySelect.value;
+                await playWithQuality(quality);
+                
             } catch (error) {
-                console.error('Play movie error:', error);
+                console.error('Play error:', error);
                 alert('Error playing movie');
                 hideVideoPlayer();
             }
         }
 
-        // Setup video player with streaming
-        async function setupVideoPlayer(movieId, quality, movieTitle) {
-            const streamUrl = `${API_BASE}/api/stream/${movieId}?quality=${quality}`;
-            
-            console.log('🎬 Streaming from:', streamUrl);
-            
-            // Clear previous source
-            elements.player.innerHTML = '';
-            
-            // Create new source
-            const source = document.createElement('source');
-            source.src = streamUrl;
-            source.type = 'video/mp4';
-            
-            elements.player.appendChild(source);
-            
-            // Initialize Plyr player
-            if (plyrPlayer) {
-                plyrPlayer.destroy();
-            }
-            
-            plyrPlayer = new Plyr('#player', {
-                controls: [
-                    'play', 
-                    'progress', 
-                    'current-time', 
-                    'duration',
-                    'mute', 
-                    'volume',
-                    'fullscreen'
-                ],
-                ratio: '16:9'
-            });
-            
-            // Load the video
-            await elements.player.load();
-            
-            // Try to play automatically
+        // Load available qualities
+        async function loadQualities(movieId) {
             try {
-                await plyrPlayer.play();
-            } catch (playError) {
-                console.log('Auto-play prevented');
+                const response = await fetch(`${API_BASE}/api/qualities/${movieId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    elements.qualitySelect.innerHTML = data.qualities.map(q => 
+                        `<option value="${q.quality}">${q.quality} (${formatFileSize(q.size)})</option>`
+                    ).join('');
+                }
+            } catch (error) {
+                console.error('Qualities error:', error);
             }
-            
-            // Set download handler
-            elements.downloadBtn.onclick = () => {
-                downloadMovie(movieId, quality, movieTitle);
-            };
+        }
+
+        // Play with specific quality
+        async function playWithQuality(quality) {
+            try {
+                const streamUrl = `${API_BASE}/api/stream/${currentMovieId}?quality=${quality}`;
+                
+                console.log('Streaming from:', streamUrl);
+                
+                // Set video source
+                elements.videoElement.src = streamUrl;
+                
+                // Load and play
+                await elements.videoElement.load();
+                
+                // Try to play automatically
+                try {
+                    await elements.videoElement.play();
+                } catch (playError) {
+                    console.log('Auto-play prevented, user must click play');
+                }
+                
+            } catch (error) {
+                console.error('Play quality error:', error);
+                alert('Error playing this quality');
+            }
         }
 
         // Handle quality change
         async function handleQualityChange() {
-            const movieId = elements.nowPlayingTitle.textContent.replace('Now Playing: ', '');
-            const quality = elements.qualitySelect.value;
-            const movieTitle = elements.nowPlayingTitle.textContent.replace('Now Playing: ', '');
-            
-            if (movieId && quality) {
-                await setupVideoPlayer(movieId, quality, movieTitle);
+            if (currentMovieId) {
+                const quality = elements.qualitySelect.value;
+                await playWithQuality(quality);
             }
         }
 
-        // Download movie
-        async function downloadMovie(movieId, quality, movieTitle) {
-            try {
-                const downloadUrl = `${API_BASE}/api/download/${movieId}?quality=${quality}`;
+        // Handle download
+        async function handleDownload() {
+            if (currentMovieId && currentMovieTitle) {
+                const quality = elements.qualitySelect.value;
+                const downloadUrl = `${API_BASE}/api/download/${currentMovieId}?quality=${quality}`;
                 
                 // Create download link
                 const link = document.createElement('a');
                 link.href = downloadUrl;
-                link.download = `${movieTitle}-${quality}.mp4`;
+                link.download = `${currentMovieTitle}-${quality}.mp4`;
                 link.target = '_blank';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                
-            } catch (error) {
-                console.error('Download error:', error);
-                alert('Download failed');
             }
         }
 
-        function handleDownload() {
-            const movieTitle = elements.nowPlayingTitle.textContent.replace('Now Playing: ', '');
-            const quality = elements.qualitySelect.value;
-            const movieId = getCurrentMovieId(); // You'd need to track this
-            
-            if (movieId) {
-                downloadMovie(movieId, quality, movieTitle);
-            }
-        }
-
-        function getCurrentMovieId() {
-            // This would track the currently playing movie
-            return localStorage.getItem('currentMovieId');
-        }
-
+        // Show video player
         function showVideoPlayer() {
-            elements.videoPlayerSection.style.display = 'flex';
+            elements.videoPlayer.style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
 
+        // Hide video player
         function hideVideoPlayer() {
-            elements.videoPlayerSection.style.display = 'none';
+            elements.videoPlayer.style.display = 'none';
             document.body.style.overflow = 'auto';
-            if (plyrPlayer) {
-                plyrPlayer.stop();
-            }
+            elements.videoElement.pause();
+            elements.videoElement.src = '';
         }
 
-        // Utility function to handle download
-        function handleDownload() {
-            const movieTitle = elements.nowPlayingTitle.textContent.replace('Now Playing: ', '');
-            const quality = elements.qualitySelect.value;
-            const movieId = getCurrentMovieId();
-            
-            if (movieId) {
-                downloadMovie(movieId, quality, movieTitle);
-            }
-        }
-
-        function getCurrentMovieId() {
-            // Simple tracking - you might want to improve this
-            return sessionStorage.getItem('currentMovieId');
+        // Format file size
+        function formatFileSize(bytes) {
+            if (!bytes) return 'N/A';
+            const mb = Math.round(bytes / 1024 / 1024);
+            return `${mb} MB`;
         }
     </script>
 </body>
