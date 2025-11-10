@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StreamFlix - Watch Movies</title>
+    <title>StreamFlix - Watch Movies & TV Shows</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -11,17 +12,28 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #e50914;
+            --primary-dark: #b2070f;
+            --background: #141414;
+            --surface: #2f2f2f;
+            --surface-light: #404040;
+            --text: #ffffff;
+            --text-secondary: #cccccc;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #141414;
-            color: white;
+            font-family: 'Arial', sans-serif;
+            background: var(--background);
+            color: var(--text);
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         /* Header */
         .header {
-            background: #000;
-            padding: 1rem 2rem;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, transparent 100%);
+            padding: 1.5rem 3rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -29,88 +41,84 @@
             width: 100%;
             top: 0;
             z-index: 1000;
-            border-bottom: 2px solid #e50914;
+            transition: background 0.3s;
         }
 
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 2rem;
+        .header.scrolled {
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(10px);
         }
 
         .logo {
-            color: #e50914;
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: bold;
+            background: linear-gradient(45deg, var(--primary), #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             cursor: pointer;
-            transition: transform 0.3s;
         }
 
-        .logo:hover {
-            transform: scale(1.05);
+        .nav-center {
+            display: flex;
+            gap: 2rem;
         }
 
-        .home-btn {
-            background: #e50914;
-            color: white;
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--text);
+        }
+
+        .search-container {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 0.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .search-input {
+            background: transparent;
             border: none;
+            color: var(--text);
             padding: 0.5rem 1rem;
-            border-radius: 4px;
+            width: 300px;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
             cursor: pointer;
-            font-weight: bold;
             transition: background 0.3s;
+        }
+
+        .search-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 80vh;
+            background: linear-gradient(135deg, #000 0%, #e50914 100%);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-        }
-
-        .home-btn:hover {
-            background: #f40612;
-        }
-
-        .search-box {
-            display: flex;
-        }
-
-        .search-box input {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 4px 0 0 4px;
-            width: 300px;
-            background: #333;
-            color: white;
-        }
-
-        .search-box input::placeholder {
-            color: #ccc;
-        }
-
-        .search-box button {
-            padding: 0.5rem 1rem;
-            background: #e50914;
-            color: white;
-            border: none;
-            border-radius: 0 4px 4px 0;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .search-box button:hover {
-            background: #f40612;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-top: 80px;
-            padding: 2rem;
-        }
-
-        .hero {
+            justify-content: center;
             text-align: center;
-            padding: 4rem 2rem;
-            background: linear-gradient(135deg, #000 0%, #e50914 100%);
-            border-radius: 15px;
-            margin-bottom: 2rem;
             position: relative;
             overflow: hidden;
         }
@@ -128,82 +136,137 @@
         .hero-content {
             position: relative;
             z-index: 2;
+            max-width: 800px;
+            padding: 2rem;
         }
 
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(45deg, #fff, #e50914);
+        .hero-title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, #fff, var(--primary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
-        .hero p {
-            font-size: 1.3rem;
-            margin-bottom: 2rem;
+        .hero-subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 2.5rem;
             opacity: 0.9;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            line-height: 1.8;
         }
 
         .btn {
-            padding: 1rem 2rem;
-            background: #e50914;
-            color: white;
+            padding: 1rem 2.5rem;
             border: none;
             border-radius: 8px;
             font-size: 1.1rem;
-            cursor: pointer;
-            margin: 0 0.5rem;
-            transition: all 0.3s;
             font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 0.5rem;
         }
 
-        .btn:hover {
-            background: #f40612;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #e50914;
-            color: #e50914;
-        }
-
-        .btn-outline:hover {
-            background: #e50914;
+        .btn-primary {
+            background: var(--primary);
             color: white;
         }
 
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(229, 9, 20, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: black;
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 3rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Quick Categories */
+        .quick-categories {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            background: var(--surface);
+            color: var(--text);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .category-btn:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .category-btn.active {
+            background: var(--primary);
+        }
+
         /* Movies Grid */
+        .section-title {
+            font-size: 2.2rem;
+            margin: 3rem 0 1.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+        }
+
         .movies-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
         }
 
         .movie-card {
-            background: #2f2f2f;
+            background: var(--surface);
             border-radius: 12px;
             overflow: hidden;
             transition: all 0.3s;
             cursor: pointer;
-            border: 1px solid #404040;
+            border: 1px solid var(--surface-light);
+            position: relative;
         }
 
         .movie-card:hover {
-            transform: translateY(-8px) scale(1.03);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.5);
-            border-color: #e50914;
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            border-color: var(--primary);
         }
 
         .movie-poster {
             width: 100%;
-            height: 300px;
+            height: 320px;
             object-fit: cover;
             transition: transform 0.3s;
         }
@@ -213,13 +276,13 @@
         }
 
         .movie-info {
-            padding: 1rem;
+            padding: 1.2rem;
         }
 
         .movie-title {
             font-weight: bold;
+            font-size: 1.1rem;
             margin-bottom: 0.5rem;
-            font-size: 1rem;
             line-height: 1.3;
             display: -webkit-box;
             -webkit-line-clamp: 2;
@@ -228,28 +291,27 @@
         }
 
         .movie-meta {
-            font-size: 0.85rem;
-            opacity: 0.7;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
         }
 
-        /* Section Title */
-        .section-title {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: white;
+        .movie-rating {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.3rem;
+            color: #ffd700;
         }
 
-        .section-title::after {
-            content: '';
-            flex: 1;
-            height: 3px;
-            background: linear-gradient(90deg, #e50914, transparent);
-            border-radius: 2px;
+        .movie-quality {
+            background: var(--primary);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
         }
 
         /* Video Player */
@@ -259,19 +321,24 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #000;
+            background: rgba(0,0,0,0.95);
             z-index: 2000;
             display: none;
             flex-direction: column;
         }
 
         .player-header {
-            padding: 1rem 2rem;
+            padding: 1.5rem 2rem;
             background: rgba(0,0,0,0.9);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--surface-light);
+        }
+
+        .player-title {
+            font-size: 1.3rem;
+            font-weight: bold;
         }
 
         .player-content {
@@ -287,17 +354,17 @@
             max-width: 1200px;
             height: auto;
             max-height: 80vh;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
         }
 
         .player-controls {
-            padding: 1rem 2rem;
+            padding: 1.5rem 2rem;
             background: rgba(0,0,0,0.9);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid #333;
+            border-top: 1px solid var(--surface-light);
         }
 
         .quality-selector {
@@ -307,78 +374,108 @@
         }
 
         .quality-selector select {
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--surface-light);
+            padding: 0.7rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
         }
 
-        /* Loading */
+        /* Loading States */
         .loading {
             text-align: center;
-            padding: 3rem 2rem;
-            font-size: 1.2rem;
+            padding: 4rem 2rem;
             grid-column: 1 / -1;
         }
 
-        .loading::after {
-            content: '...';
-            animation: dots 1.5s steps(4, end) infinite;
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--surface);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
         }
 
-        @keyframes dots {
-            0%, 20% { color: rgba(255,255,255,0); text-shadow: .25em 0 0 rgba(255,255,255,0), .5em 0 0 rgba(255,255,255,0); }
-            40% { color: white; text-shadow: .25em 0 0 rgba(255,255,255,0), .5em 0 0 rgba(255,255,255,0); }
-            60% { text-shadow: .25em 0 0 white, .5em 0 0 rgba(255,255,255,0); }
-            80%, 100% { text-shadow: .25em 0 0 white, .5em 0 0 white; }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .error {
             text-align: center;
-            padding: 3rem 2rem;
-            color: #e50914;
-            font-size: 1.2rem;
+            padding: 4rem 2rem;
+            color: var(--primary);
             grid-column: 1 / -1;
         }
 
-        /* Quick Actions */
-        .quick-actions {
-            display: flex;
-            gap: 1rem;
-            margin: 1rem 0;
-            flex-wrap: wrap;
-        }
-
-        .quick-btn {
-            background: #333;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.9rem;
-        }
-
-        .quick-btn:hover {
-            background: #e50914;
-            transform: translateY(-2px);
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
 
         /* Stats */
         .stats {
             display: flex;
-            gap: 2rem;
-            margin: 1rem 0;
-            color: #ccc;
-            font-size: 0.9rem;
+            gap: 3rem;
+            margin: 2rem 0;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .stat-item {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 1rem;
+            background: var(--surface);
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            min-width: 200px;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        .stat-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--surface);
+            padding: 3rem;
+            text-align: center;
+            margin-top: 4rem;
+            border-top: 1px solid var(--surface-light);
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary), #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         /* Responsive */
@@ -389,104 +486,144 @@
                 gap: 1rem;
             }
             
-            .nav-left {
-                width: 100%;
-                justify-content: space-between;
+            .nav-center {
+                gap: 1rem;
             }
             
-            .search-box input {
+            .search-input {
                 width: 200px;
             }
             
-            .hero h1 {
+            .hero-title {
                 font-size: 2.5rem;
             }
             
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+            }
+            
             .movies-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
                 gap: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
             }
         }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <header class="header">
-        <div class="nav-left">
-            <div class="logo" onclick="goHome()">
-                🎬 StreamFlix
-            </div>
-            <button class="home-btn" onclick="goHome()">
-                <i class="fas fa-home"></i> Home
-            </button>
+    <header class="header" id="header">
+        <div class="logo" onclick="goHome()">
+            🎬 StreamFlix
         </div>
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Search movies...">
-            <button id="searchBtn">
-                <i class="fas fa-search"></i> Search
+        
+        <div class="nav-center">
+            <div class="nav-link active" onclick="goHome()">Home</div>
+            <div class="nav-link" onclick="loadTrendingMovies()">Trending</div>
+            <div class="nav-link" onclick="searchMovies('movies')">Movies</div>
+            <div class="nav-link" onclick="searchMovies('tv shows')">TV Shows</div>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search movies...">
+            <button class="search-btn" onclick="handleSearch()">
+                <i class="fas fa-search"></i>
             </button>
         </div>
     </header>
 
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Unlimited Entertainment</h1>
+            <p class="hero-subtitle">Stream thousands of movies and TV shows in HD quality. No ads, no interruptions. Just pure entertainment.</p>
+            <div>
+                <button class="btn btn-primary" onclick="loadTrendingMovies()">
+                    <i class="fas fa-play"></i> Start Watching
+                </button>
+                <button class="btn btn-secondary" onclick="searchMovies('avengers')">
+                    <i class="fas fa-star"></i> Popular Movies
+                </button>
+            </div>
+        </div>
+    </section>
+
     <!-- Main Content -->
     <main class="main-content">
-        <section class="hero">
-            <div class="hero-content">
-                <h1>Unlimited Movies & TV Shows</h1>
-                <p>Watch anywhere. Stream anytime. Join millions of happy users with instant loading and crystal clear quality.</p>
-                <div>
-                    <button class="btn" onclick="loadTrendingMovies()">
-                        <i class="fas fa-play"></i> Start Watching
-                    </button>
-                    <button class="btn btn-outline" onclick="searchMovies('avengers')">
-                        <i class="fas fa-bolt"></i> Try Sample
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <button class="quick-btn" onclick="searchMovies('avengers')">Avengers</button>
-            <button class="quick-btn" onclick="searchMovies('spider man')">Spider Man</button>
-            <button class="quick-btn" onclick="searchMovies('john wick')">John Wick</button>
-            <button class="quick-btn" onclick="searchMovies('fast and furious')">Fast & Furious</button>
-            <button class="quick-btn" onclick="searchMovies('batman')">Batman</button>
-            <button class="quick-btn" onclick="searchMovies('mission impossible')">Mission Impossible</button>
+        <!-- Quick Categories -->
+        <div class="quick-categories">
+            <button class="category-btn active" onclick="loadTrendingMovies()">All</button>
+            <button class="category-btn" onclick="searchMovies('action')">Action</button>
+            <button class="category-btn" onclick="searchMovies('comedy')">Comedy</button>
+            <button class="category-btn" onclick="searchMovies('drama')">Drama</button>
+            <button class="category-btn" onclick="searchMovies('horror')">Horror</button>
+            <button class="category-btn" onclick="searchMovies('sci-fi')">Sci-Fi</button>
+            <button class="category-btn" onclick="searchMovies('romance')">Romance</button>
+            <button class="category-btn" onclick="searchMovies('animation')">Animation</button>
         </div>
 
         <!-- Stats -->
         <div class="stats">
             <div class="stat-item">
-                <i class="fas fa-bolt"></i>
-                <span>Instant Loading</span>
+                <div class="stat-icon">⚡</div>
+                <div class="stat-text">
+                    <div class="stat-value">Instant Play</div>
+                    <div class="stat-label">No buffering</div>
+                </div>
             </div>
             <div class="stat-item">
-                <i class="fas fa-film"></i>
-                <span>HD Quality</span>
+                <div class="stat-icon">🎬</div>
+                <div class="stat-text">
+                    <div class="stat-value">HD Quality</div>
+                    <div class="stat-label">1080p Available</div>
+                </div>
             </div>
             <div class="stat-item">
-                <i class="fas fa-download"></i>
-                <span>Free Downloads</span>
+                <div class="stat-icon">📱</div>
+                <div class="stat-text">
+                    <div class="stat-value">Any Device</div>
+                    <div class="stat-label">Watch anywhere</div>
+                </div>
             </div>
         </div>
 
         <!-- Movies Section -->
         <section id="moviesSection">
             <h2 class="section-title" id="sectionTitle">
-                <i class="fas fa-fire"></i> Trending Movies
+                <i class="fas fa-fire"></i> Trending Now
             </h2>
             <div class="movies-grid" id="moviesGrid">
-                <div class="loading">Loading movies</div>
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading amazing content...</div>
+                </div>
             </div>
         </section>
     </main>
 
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">StreamFlix</div>
+            <p>The ultimate streaming experience. Watch your favorite movies and TV shows anytime, anywhere.</p>
+            <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+                &copy; 2024 StreamFlix. All rights reserved.
+            </p>
+        </div>
+    </footer>
+
     <!-- Video Player -->
     <div class="video-player" id="videoPlayer">
         <div class="player-header">
-            <h3 id="nowPlaying">Now Playing</h3>
-            <button class="btn" onclick="hideVideoPlayer()">
+            <div class="player-title" id="nowPlaying">Now Playing</div>
+            <button class="btn btn-primary" onclick="hideVideoPlayer()">
                 <i class="fas fa-times"></i> Close
             </button>
         </div>
@@ -504,44 +641,59 @@
                     <option value="360p">360p</option>
                 </select>
             </div>
-            <button class="btn" id="downloadBtn">
-                <i class="fas fa-download"></i> Download
-            </button>
+            <div>
+                <button class="btn btn-secondary" onclick="hideVideoPlayer()">
+                    <i class="fas fa-stop"></i> Stop
+                </button>
+                <button class="btn btn-primary" id="downloadBtn">
+                    <i class="fas fa-download"></i> Download
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Font Awesome for icons -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-
     <script>
+        // =====================
+        // APP CONFIGURATION
+        // =====================
         const API_BASE = window.location.origin;
+        let currentMovieId = null;
+        let currentMovieTitle = null;
+        let currentSection = 'trending';
 
-        // DOM Elements
+        // =====================
+        // DOM ELEMENTS
+        // =====================
         const elements = {
             searchInput: document.getElementById('searchInput'),
-            searchBtn: document.getElementById('searchBtn'),
             moviesGrid: document.getElementById('moviesGrid'),
             videoPlayer: document.getElementById('videoPlayer'),
             videoElement: document.getElementById('videoElement'),
             nowPlaying: document.getElementById('nowPlaying'),
             qualitySelect: document.getElementById('qualitySelect'),
             downloadBtn: document.getElementById('downloadBtn'),
-            sectionTitle: document.getElementById('sectionTitle')
+            sectionTitle: document.getElementById('sectionTitle'),
+            header: document.getElementById('header')
         };
 
-        let currentMovieId = null;
-        let currentMovieTitle = null;
-        let currentSection = 'trending';
-
-        // Initialize
+        // =====================
+        // INITIALIZATION
+        // =====================
         document.addEventListener('DOMContentLoaded', function() {
-            setupEventListeners();
-            loadTrendingMovies();
-            testVideoSupport();
+            initializeApp();
         });
 
+        function initializeApp() {
+            setupEventListeners();
+            loadTrendingMovies();
+            setupScrollEffect();
+            
+            // Test API connection
+            testAPI();
+        }
+
         function setupEventListeners() {
-            // Search with debouncing
+            // Search functionality
             let searchTimeout;
             elements.searchInput.addEventListener('input', function(e) {
                 clearTimeout(searchTimeout);
@@ -549,52 +701,80 @@
                     const query = e.target.value.trim();
                     if (query.length > 2) {
                         searchMovies(query);
+                    } else if (query.length === 0) {
+                        loadTrendingMovies();
                     }
                 }, 500);
             });
 
-            elements.searchBtn.addEventListener('click', () => {
-                const query = elements.searchInput.value.trim();
-                if (query) searchMovies(query);
-            });
-
             elements.searchInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    const query = e.target.value.trim();
-                    if (query) searchMovies(query);
+                    handleSearch();
                 }
             });
 
-            // Video player
+            // Video player events
             elements.qualitySelect.addEventListener('change', handleQualityChange);
             elements.downloadBtn.addEventListener('click', handleDownload);
+            
+            // Video element events
+            elements.videoElement.addEventListener('loadeddata', function() {
+                console.log('✅ Video loaded successfully');
+            });
+            
+            elements.videoElement.addEventListener('error', function(e) {
+                console.error('❌ Video error:', e);
+                showStreamingError('Video playback failed. Please try another quality or movie.');
+            });
         }
 
-        // Test video support
-        async function testVideoSupport() {
-            try {
-                const response = await fetch(`${API_BASE}/api/test-video`);
-                const data = await response.json();
-                console.log('🎬 Video support test:', data);
-            } catch (error) {
-                console.error('Video test failed:', error);
-            }
+        function setupScrollEffect() {
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 100) {
+                    elements.header.classList.add('scrolled');
+                } else {
+                    elements.header.classList.remove('scrolled');
+                }
+            });
         }
 
-        // HOME BUTTON FUNCTION
+        // =====================
+        // CORE FUNCTIONS
+        // =====================
         function goHome() {
             elements.searchInput.value = '';
             currentSection = 'trending';
             loadTrendingMovies();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            console.log('🏠 Home button clicked - Loading trending movies');
+            updateActiveNav('Home');
         }
 
-        // INSTANT trending movies
+        function handleSearch() {
+            const query = elements.searchInput.value.trim();
+            if (query) {
+                searchMovies(query);
+            }
+        }
+
+        function updateActiveNav(activeItem) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Activate the clicked item
+            event.target.classList.add('active');
+        }
+
+        // =====================
+        // MOVIE DATA FUNCTIONS
+        // =====================
         async function loadTrendingMovies() {
             try {
-                updateSectionTitle('Trending Movies', 'fire');
-                elements.moviesGrid.innerHTML = '<div class="loading">Loading trending movies</div>';
+                updateSectionTitle('Trending Now', 'fire');
+                showLoadingState();
                 
                 const response = await fetch(`${API_BASE}/api/trending`);
                 const data = await response.json();
@@ -603,61 +783,32 @@
                     displayMovies(data.results.items);
                     currentSection = 'trending';
                 } else {
-                    searchMovies('avengers');
+                    throw new Error('No trending movies found');
                 }
             } catch (error) {
                 console.error('Trending error:', error);
-                searchMovies('avengers');
+                showErrorState('Failed to load trending movies. Please try again.');
             }
         }
 
-        function updateSectionTitle(title, icon = 'film') {
-            const icons = {
-                'fire': 'fas fa-fire',
-                'search': 'fas fa-search',
-                'film': 'fas fa-film',
-                'home': 'fas fa-home',
-                'trending': 'fas fa-chart-line'
-            };
-            
-            const iconClass = icons[icon] || 'fas fa-film';
-            elements.sectionTitle.innerHTML = `<i class="${iconClass}"></i> ${title}`;
-        }
-
-        // FAST SEARCH with loading states
         async function searchMovies(query) {
             try {
                 updateSectionTitle(`Search: "${query}"`, 'search');
                 showLoadingState();
-                console.log(`🔍 Searching: ${query}`);
                 
-                const startTime = Date.now();
                 const response = await fetch(`${API_BASE}/api/search/${encodeURIComponent(query)}`);
                 const data = await response.json();
-                const endTime = Date.now();
                 
-                console.log(`✅ Search took ${endTime - startTime}ms`);
-                
-                if (data.success && data.results && data.results.items && data.results.items.length > 0) {
+                if (data.success && data.results.items.length > 0) {
                     displayMovies(data.results.items);
                     currentSection = 'search';
                 } else {
                     showNoResults(query);
                 }
             } catch (error) {
-                console.error('❌ Search error:', error);
-                showErrorState(error);
+                console.error('Search error:', error);
+                showErrorState('Search failed. Please check your connection.');
             }
-        }
-
-        function showLoadingState() {
-            elements.moviesGrid.innerHTML = `
-                <div class="loading">
-                    <div style="font-size: 2rem; margin-bottom: 1rem;">⚡</div>
-                    <div>Loading movies...</div>
-                    <div style="font-size: 0.8rem; opacity: 0.7; margin-top: 0.5rem;">This should be fast! 🚀</div>
-                </div>
-            `;
         }
 
         function displayMovies(movies) {
@@ -666,29 +817,32 @@
                 return;
             }
 
-            const movieCount = movies.length;
-            
             elements.moviesGrid.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; margin-bottom: 1rem; color: #ccc; font-size: 0.9rem;">
-                    🎬 Found ${movieCount} movies • ⚡ Instant loading
+                    🎬 Found ${movies.length} movies • Ready to stream
                 </div>
                 ${movies.map(movie => {
                     const title = movie.title || 'Unknown Title';
-                    const poster = movie.cover?.url || 'https://via.placeholder.com/200x300/333/fff?text=No+Image';
+                    const poster = movie.cover?.url || 'https://via.placeholder.com/300x450/2f2f2f/fff?text=No+Image';
                     const year = movie.releaseDate ? movie.releaseDate.split('-')[0] : 'N/A';
                     const rating = movie.imdbRatingValue || 'N/A';
                     const movieId = movie.subjectId || Math.random().toString(36).substr(2, 9);
+                    const quality = movie.quality || 'HD';
 
                     return `
                         <div class="movie-card" onclick="playMovie('${movieId}', '${title.replace(/'/g, "\\'")}')">
                             <img src="${poster}" alt="${title}" class="movie-poster"
-                                 onerror="this.src='https://via.placeholder.com/200x300/333/fff?text=No+Image'">
+                                 onerror="this.src='https://via.placeholder.com/300x450/2f2f2f/fff?text=No+Image'">
                             <div class="movie-info">
                                 <div class="movie-title">${title}</div>
                                 <div class="movie-meta">
                                     <span>${year}</span>
-                                    <span>⭐ ${rating}</span>
+                                    <div class="movie-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>${rating}</span>
+                                    </div>
                                 </div>
+                                <div class="movie-quality">${quality}</div>
                             </div>
                         </div>
                     `;
@@ -696,38 +850,9 @@
             `;
         }
 
-        function showNoResults(query = '') {
-            elements.moviesGrid.innerHTML = `
-                <div class="error" style="grid-column: 1 / -1; text-align: center;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎬</div>
-                    <h3>No movies found</h3>
-                    <p>Try searching for popular movies or click Home to see trending</p>
-                    <div style="margin-top: 1rem;">
-                        <button class="btn" onclick="goHome()" style="margin: 0.5rem;">
-                            <i class="fas fa-home"></i> Go Home
-                        </button>
-                        <button class="btn btn-outline" onclick="searchMovies('avengers')" style="margin: 0.5rem;">
-                            <i class="fas fa-search"></i> Try Avengers
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function showErrorState(error) {
-            elements.moviesGrid.innerHTML = `
-                <div class="error" style="grid-column: 1 / -1; text-align: center;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
-                    <h3>Search Failed</h3>
-                    <p>${error.message}</p>
-                    <button class="btn" onclick="goHome()" style="margin-top: 1rem;">
-                        <i class="fas fa-home"></i> Go Home
-                    </button>
-                </div>
-            `;
-        }
-
-        // FIXED PLAY MOVIE FUNCTION
+        // =====================
+        // VIDEO STREAMING FUNCTIONS
+        // =====================
         async function playMovie(movieId, movieTitle) {
             try {
                 currentMovieId = movieId;
@@ -736,186 +861,69 @@
                 elements.nowPlaying.textContent = `Now Playing: ${movieTitle}`;
                 showVideoPlayer();
                 
-                // Load qualities
+                // Load available qualities
                 await loadQualities(movieId);
                 
-                // Try different streaming methods
-                await tryStreamingMethods(movieId);
+                // Start streaming
+                await startStreaming(movieId);
                 
             } catch (error) {
                 console.error('Play error:', error);
-                showStreamingError(error);
+                showStreamingError('Failed to play movie. Please try again.');
             }
         }
 
-        // Try different streaming methods
-        async function tryStreamingMethods(movieId) {
+        async function startStreaming(movieId) {
             const quality = elements.qualitySelect.value;
-            
-            // Method 1: Direct streaming
-            console.log('🔄 Trying Method 1: Direct streaming');
             const streamUrl = `${API_BASE}/api/stream/${movieId}?quality=${quality}`;
             
+            console.log(`🎬 Starting stream: ${streamUrl}`);
+            
+            // Clear previous source
+            elements.videoElement.innerHTML = '';
+            
+            // Create source element
+            const source = document.createElement('source');
+            source.src = streamUrl;
+            source.type = 'video/mp4';
+            
+            elements.videoElement.appendChild(source);
+            elements.videoElement.load();
+            
+            // Try to play
             try {
-                await playVideoWithUrl(streamUrl, 'Method 1 (Stream)');
-                return; // Success, stop trying other methods
-            } catch (error1) {
-                console.log('❌ Method 1 failed:', error1.message);
+                await elements.videoElement.play();
+                console.log('✅ Video playback started');
+            } catch (playError) {
+                console.log('⏸️ Auto-play prevented, waiting for user interaction');
             }
-            
-            // Method 2: Direct video (redirect)
-            console.log('🔄 Trying Method 2: Direct video');
-            const directUrl = `${API_BASE}/api/video/${movieId}?quality=${quality}`;
-            
-            try {
-                await playVideoWithUrl(directUrl, 'Method 2 (Direct)');
-                return; // Success
-            } catch (error2) {
-                console.log('❌ Method 2 failed:', error2.message);
-            }
-            
-            // Method 3: External URL directly
-            console.log('🔄 Trying Method 3: External URL');
-            try {
-                const qualitiesResponse = await fetch(`${API_BASE}/api/qualities/${movieId}`);
-                const qualitiesData = await qualitiesResponse.json();
-                
-                if (qualitiesData.success && qualitiesData.qualities.length > 0) {
-                    const selectedQuality = qualitiesData.qualities.find(q => q.quality === quality) || qualitiesData.qualities[0];
-                    await playVideoWithUrl(selectedQuality.download_url, 'Method 3 (External)');
-                    return; // Success
-                }
-            } catch (error3) {
-                console.log('❌ Method 3 failed:', error3.message);
-            }
-            
-            // All methods failed
-            throw new Error('All streaming methods failed. The video format may not be supported by your browser.');
         }
 
-        // Play video with specific URL
-        async function playVideoWithUrl(videoUrl, method) {
-            return new Promise((resolve, reject) => {
-                console.log(`🎬 ${method}: ${videoUrl}`);
-                
-                // Clear previous source
-                elements.videoElement.innerHTML = '';
-                
-                // Create source element
-                const source = document.createElement('source');
-                source.src = videoUrl;
-                source.type = 'video/mp4';
-                
-                elements.videoElement.appendChild(source);
-                
-                // Event listeners
-                const errorHandler = () => {
-                    console.log(`❌ ${method} video error`);
-                    reject(new Error(`Video playback failed: ${method}`));
-                };
-                
-                const loadHandler = () => {
-                    console.log(`✅ ${method} video loaded`);
-                    resolve();
-                };
-                
-                elements.videoElement.addEventListener('error', errorHandler, { once: true });
-                elements.videoElement.addEventListener('loadeddata', loadHandler, { once: true });
-                
-                // Load the video
-                elements.videoElement.load();
-                
-                // Try to play
-                elements.videoElement.play().catch(playError => {
-                    console.log(`⏸️ ${method} auto-play prevented`);
-                    // Auto-play prevention is not a failure
-                });
-                
-                // Timeout after 10 seconds
-                setTimeout(() => {
-                    if (elements.videoElement.readyState < 2) { // Not loaded enough
-                        reject(new Error('Video loading timeout'));
-                    }
-                }, 10000);
-            });
-        }
-
-        // Load available qualities
         async function loadQualities(movieId) {
             try {
                 const response = await fetch(`${API_BASE}/api/qualities/${movieId}`);
                 const data = await response.json();
                 
-                if (data.success && data.qualities) {
+                if (data.success && data.qualities.length > 0) {
                     elements.qualitySelect.innerHTML = data.qualities.map(q => 
                         `<option value="${q.quality}">${q.quality} (${formatFileSize(q.size)})</option>`
                     ).join('');
-                } else {
-                    elements.qualitySelect.innerHTML = `
-                        <option value="720p">720p HD</option>
-                        <option value="480p">480p</option>
-                        <option value="360p">360p</option>
-                    `;
                 }
             } catch (error) {
                 console.error('Qualities error:', error);
-                elements.qualitySelect.innerHTML = `
-                    <option value="720p">720p HD</option>
-                    <option value="480p">480p</option>
-                    <option value="360p">360p</option>
-                `;
             }
         }
 
-        // Handle quality change
         async function handleQualityChange() {
             if (currentMovieId) {
-                const quality = elements.qualitySelect.value;
-                await tryStreamingMethods(currentMovieId);
+                await startStreaming(currentMovieId);
             }
         }
 
-        // Show streaming error
-        function showStreamingError(error) {
-            hideVideoPlayer();
-            
-            const errorMessage = `
-                <div style="text-align: center; padding: 2rem; background: #2f2f2f; border-radius: 10px; margin: 1rem;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎬</div>
-                    <h3 style="color: #e50914;">Video Playback Failed</h3>
-                    <p>${error.message}</p>
-                    <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 1rem;">
-                        This could be due to:
-                        <br>• Video format not supported by your browser
-                        <br>• Network restrictions
-                        <br>• Server issues
-                    </p>
-                    <button class="btn" onclick="hideVideoPlayer()" style="margin-top: 1rem;">
-                        <i class="fas fa-times"></i> Close
-                    </button>
-                    <button class="btn btn-outline" onclick="handleDownload()" style="margin-top: 1rem; margin-left: 0.5rem;">
-                        <i class="fas fa-download"></i> Download Instead
-                    </button>
-                </div>
-            `;
-            
-            // Show error in movies grid temporarily
-            const previousContent = elements.moviesGrid.innerHTML;
-            elements.moviesGrid.innerHTML = errorMessage;
-            
-            // Restore after 5 seconds
-            setTimeout(() => {
-                elements.moviesGrid.innerHTML = previousContent;
-            }, 5000);
-        }
-
-        // Handle download
         async function handleDownload() {
             if (currentMovieId && currentMovieTitle) {
                 const quality = elements.qualitySelect.value;
                 const downloadUrl = `${API_BASE}/api/download/${currentMovieId}?quality=${quality}`;
-                
-                console.log('📥 Downloading from:', downloadUrl);
                 
                 const link = document.createElement('a');
                 link.href = downloadUrl;
@@ -927,26 +935,86 @@
             }
         }
 
-        // Show video player
+        // =====================
+        // UI HELPER FUNCTIONS
+        // =====================
+        function showLoadingState() {
+            elements.moviesGrid.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading amazing content...</div>
+                </div>
+            `;
+        }
+
+        function showNoResults(query = '') {
+            elements.moviesGrid.innerHTML = `
+                <div class="error">
+                    <div class="error-icon">🎬</div>
+                    <h3>No movies found</h3>
+                    <p>Try searching for different keywords or browse trending movies</p>
+                    <button class="btn btn-primary" onclick="loadTrendingMovies()" style="margin-top: 1rem;">
+                        <i class="fas fa-home"></i> Browse Trending
+                    </button>
+                </div>
+            `;
+        }
+
+        function showErrorState(message) {
+            elements.moviesGrid.innerHTML = `
+                <div class="error">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Something went wrong</h3>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="location.reload()" style="margin-top: 1rem;">
+                        <i class="fas fa-redo"></i> Reload Page
+                    </button>
+                </div>
+            `;
+        }
+
+        function showStreamingError(message) {
+            alert(`Streaming Error: ${message}`);
+        }
+
+        function updateSectionTitle(title, icon = 'film') {
+            const icons = {
+                'fire': 'fas fa-fire',
+                'search': 'fas fa-search',
+                'film': 'fas fa-film',
+                'home': 'fas fa-home'
+            };
+            
+            const iconClass = icons[icon] || 'fas fa-film';
+            elements.sectionTitle.innerHTML = `<i class="${iconClass}"></i> ${title}`;
+        }
+
         function showVideoPlayer() {
             elements.videoPlayer.style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
 
-        // Hide video player
         function hideVideoPlayer() {
             elements.videoPlayer.style.display = 'none';
             document.body.style.overflow = 'auto';
             elements.videoElement.pause();
             elements.videoElement.src = '';
-            elements.videoElement.innerHTML = '';
         }
 
-        // Format file size
         function formatFileSize(bytes) {
             if (!bytes) return 'N/A';
             const mb = Math.round(bytes / 1024 / 1024);
             return `${mb} MB`;
+        }
+
+        async function testAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                const data = await response.json();
+                console.log('✅ API Health:', data.status);
+            } catch (error) {
+                console.error('❌ API Test Failed:', error);
+            }
         }
     </script>
 </body>
